@@ -1,46 +1,65 @@
-final float STATUS_BAR_HEIGHT = 24;
-Layout statusBarLayout = new Layout(0, 0, 4);
-
 void defaultCallback() {
     println("Click!");
 };
 
-void initStatusBar() { 
-    String[] dangerNames = {"Запуск", "Калибровка"};
-    String[] dangerCallbacks = {"defaultCallback", "defaultCallback"};
+class StatusBar {
 
-    String[] regularNames = {"Камера", "Цвет"};
-    String[] regularCallbacks = {"changeCamera", "defaultCallback"};
+    private PApplet _context;
 
-    // Инициализация контейнера
-    statusBarLayout._indents = 20;
+    private Layout layout; 
+    
+    StatusBar(PApplet context) {
+        _context = context;
 
-    // Инициализация опасных кнопок
-    for (int i = 0; i < dangerNames.length; i++){
-        Button btn = new Button(this, dangerNames[i], dangerCallbacks[i], 10, 5);
-        btn.setTextSize(14);
-        btn._buttonColor = TRANSPARENT;
-        btn._buttonHoverColor = DANGER_COLOR;
-        btn._textColor = color(0);
-        btn._textHoverColor = color(255);
-        statusBarLayout.add(btn);
+        // Параметры
+        int textSize = 14;
+        float textVertIndent = (STATUS_BAR_HEIGHT - textSize) / 2;
+
+        String[] dangerNames = {"Запуск", "Калибровка"};
+        String[] dangerCallbacks = {"defaultCallback", "defaultCallback"};
+
+        String[] regularNames = {"Камера", "Цвет"};
+        String[] regularCallbacks = {"changeCamera", "defaultCallback"};
+
+        // Инициализация контейнера
+        layout = new Layout(4);
+        layout.setIndents(20);
+        layout.moveTo(0, 0);
+
+        // Инициализация опасных кнопок
+        for (int i = 0; i < dangerNames.length; i++){
+            Button btn = new Button(context, dangerNames[i], dangerCallbacks[i], 10, textVertIndent);
+            btn.setTextSize(textSize);
+            btn.setButtonColor(TRANSPARENT);
+            btn.setButtonHoverColor(DANGER_COLOR);
+            btn.setTextColor(color(0));
+            btn.setTextHoverColor(color(255));
+            layout.add(btn);
+        }
+
+        // Инициализация обычных кнопок
+        for (int i = 0; i < regularNames.length; i++){
+            Button btn = new Button(context, regularNames[i], regularCallbacks[i], 10, textVertIndent);
+            btn.setTextSize(textSize);
+            btn._buttonColor = TRANSPARENT;
+            btn.setButtonHoverColor(color(0, 255 * 0.2));
+            btn.setTextColor(color(0));
+            btn.setTextHoverColor(color(0));
+            layout.add(btn);
+        }    
+
     }
 
-    // Инициализация обычных кнопок
-    for (int i = 0; i < regularNames.length; i++){
-        Button btn = new Button(this, regularNames[i], regularCallbacks[i], 10, 5);
-        btn.setTextSize(14);
-        btn._buttonColor = TRANSPARENT;
-        btn._buttonHoverColor = color(0, 255 * 0.2);
-        btn._textColor = color(0);
-        btn._textHoverColor = color(0);
-        statusBarLayout.add(btn);
-    }    
+    public void draw() {
+        
+        // Фон
+        noStroke();
+        fill(color(255, 128));
+        rect(0, 0, width, STATUS_BAR_HEIGHT);
 
-}
+        // Компоненты
+        layout.draw();
 
-void drawStatusBar(){
-    fill(color(255, 128));
-    rect(0, 0, width, STATUS_BAR_HEIGHT);
-    statusBarLayout.draw();
+    }
+
 }

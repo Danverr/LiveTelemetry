@@ -7,16 +7,16 @@ void captureEvent(Capture video){
     video.read();    
 }
 
-void initCamera(){
-    String[] cameras = Capture.list();
-    
-    cameraIndex %= cameras.length;
-
+void initCamera(){   
     while(true){
         try{
+            String[] cameras = Capture.list();            
+            if(cameras.length == 0) throw new Exception();
+            cameraIndex %= cameras.length;
+
             cam = new Capture(this, 1920, 1080, cameras[cameraIndex]);
-            cam.start();            
-            println("Selected camera: " + cameras[cameraIndex]);
+            cam.start();
+
             showLoader = false;
             return;            
         } catch(Exception e) {

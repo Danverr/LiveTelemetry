@@ -1,112 +1,153 @@
 final int HORIZONTAL = 0; 
 final int VERTICAL = 1;
-final int FORWARD = 0;
-final int BACKWARD = 2;
 
-public class Layout {
+final int FORWARD = 0;
+final int BACKWARD = 1;
+
+final int LEFT_ALIGHT = 0;
+final int RIGHT_ALIGN = 1;
+final int CENTER_ALIGN = 2;
+
+public class Layout extends GuiObject {
 
     //==========   ПЕРЕМЕННЫЕ   ==========// 
 
-    protected float _x = 0;
-    protected float _y = 0;
+    protected GuiObject[] _list;
 
-    protected TextLayout[] _list;
-
-    public float _spacing = 0;
-    public float _indents = 0;
+    protected float _spacing = 0;
+    protected float _indents = 0;
     protected int _size = 0;
 
-    public int _direction = FORWARD | HORIZONTAL;
+    protected int _orientation = HORIZONTAL;
+    protected int _direction = FORWARD;
+    protected int _align = CENTER_ALIGN;
 
 
 
     //==========   КОНСТРУКТОРЫ   ==========// 
 
-    Layout(int x, int y, int size){
-        _x = x;
-        _y = y;
-        _list = new TextLayout[size];
+    Layout(float width, float height, int size){
+        this(size);
+        _width = width;
+        _height = height;
+    }
+    
+    Layout(int size){
+        _list = new GuiObject[size];
     }
 
 
 
     //==========   PROTECTED МЕТОДЫ   ==========// 
 
-    protected void update(){
-        float x = _x;
-        float y = _y;
-        float mod = ((_direction & FORWARD) == FORWARD) ? 1 : -1;
+    protected void update(){        
+        PVector pos = new PVector(_x, _y);
+        PVector layoutSize = getSize();
+        PVector mainAxis = getMainAxis(true);
+        PVector crossAxis = getCrossAxis();
 
-        if((_direction & HORIZONTAL) == HORIZONTAL) x += _indents * mod;        
-        else if((_direction & VERTICAL) == VERTICAL) y += _indents * mod;
+        pos.add(mainAxis.copy().mult(_indents));
 
-        for(int i = 0; i < _size; i++){            
-            _list[i].moveTo(x, y);            
+        for(int i = 0; i < _size; i++){
+            PVector itemSize = new PVector(_list[i].getWidth(), _list[i].getHeight());
+            PVector itemPos = pos.copy();
+
+            if (_align == CENTER_ALIGN){
+                itemPos.add(multByCoords(layoutSize.copy().sub(itemSize).div(2), crossAxis));
+            } else if (_align == RIGHT_ALIGN){
+                itemPos.add(multByCoords(layoutSize.copy().sub(itemSize), crossAxis));
+            }
+
+            _list[i].moveTo(itemPos.x, itemPos.y);
+            pos.add(multByCoords(itemSize.copy().add(_spacing, _spacing), mainAxis));
+        }        
+    }
+
+    protected PVector getMainAxis(boolean withDirection) {        
+        float dir = (_direction == FORWARD) ? 1 : -1; 
+        PVector res = new PVector(int(_orientation == HORIZONTAL), int(_orientation == VERTICAL));
+        if(withDirection) res = res.mult(dir);
+        return res;
+    }
+
+    protected PVector getCrossAxis() {
+        return new PVector(int(_orientation == VERTICAL), int(_orientation == HORIZONTAL));
+    }
+
+    protected PVector getSize() {
+        if(_width != -1 && _height != -1) return new PVector(_width, _height);
+        if(_size == 0) return new PVector(0, 0);
+
+        PVector mainAxis = getMainAxis(false);
+        PVector crossAxis = getCrossAxis();
+        PVector layoutSize = new PVector(0, 0);
             
-            if((_direction & HORIZONTAL) == HORIZONTAL) x += (_spacing + _list[i].getWidth()) * mod;
-            else if((_direction & VERTICAL) == VERTICAL) y += (_spacing + _list[i].getHeight()) * mod;
+        layoutSize.add(mainAxis.copy().mult(2 * _indents + (_size - 1) * _spacing));
+
+        for(int i = 0; i < _size; i++){
+            PVector itemSize = new PVector(_list[i].getWidth(), _list[i].getHeight());
+            PVector itemMainCoord = multByCoords(itemSize, mainAxis);
+            PVector itemCrossCoord = multByCoords(itemSize, crossAxis);
+
+            layoutSize.add(itemMainCoord);
+
+            if(itemCrossCoord.mag() > multByCoords(layoutSize, crossAxis).mag()){
+                layoutSize = multByCoords(layoutSize, mainAxis);
+                layoutSize.add(itemCrossCoord);
+            }
         }
+
+        return layoutSize;
     }
 
 
 
     //==========   PUBLIC МЕТОДЫ   ==========// 
 
-    public void draw(){      
-        for(TextLayout item : _list){
-            item.draw();
+    public void draw(){
+        update(); 
+
+        for(int i = 0; i < _size; i++){
+            _list[i].draw();
         }
     }
 
-    public void add(TextLayout item){
+    public void add(GuiObject item){
         _list[_size++] = item;
-        update();
     }
 
-    public float getWidth(){        
-        float _width = 0;
+    //==========   PUBLIC МЕТОДЫ: ГЕТТЕРЫ   ==========//
 
-        if(_direction == HORIZONTAL){
-            if(_size == 0) return _width;
-            _width = 2 * _indents + (_size - 1) * _spacing;
-
-            for(int i = 0; i < _size; i++){
-                _width += _list[i].getWidth();
-            }
-
-            return _width;
-        } else if(_direction == VERTICAL){
-            for(int i = 0; i < _size; i++){
-                _width = max(_width, _list[i].getWidth());
-            }
-        }
-
-        return _width;        
+    public float getWidth(){
+        return getSize().x;
     }
 
     public float getHeight(){
-        float _height = 0;
-
-        if(_direction == HORIZONTAL){
-            for(int i = 0; i < _size; i++){
-                _height = max(_height, _list[i].getHeight());
-            }
-        } else if(_direction == VERTICAL){
-            if(_size == 0) return _height;
-            _height = 2 * _indents + (_size - 1) * _spacing;
-
-            for(int i = 0; i < _size; i++){
-                _height += _list[i].getHeight();
-            }
-
-            return _height;
-        } 
-
-        return _height;
+        return getSize().y;
     }
 
 
 
     //==========   PUBLIC МЕТОДЫ: СЕТТЕРЫ   ==========//
+
+    public void setSpacing(float spacing){
+        _spacing = spacing;
+    }
+
+    public void setIndents(float indents){
+        _indents = indents;
+    }
+    
+    public void setOrientation(int orientation){
+        _orientation = orientation;
+    }
+
+    public void setDirection(int direction){
+        _direction = direction;
+    }
+
+    public void setAlign(int align){
+        _align = align;
+    }
 
 }

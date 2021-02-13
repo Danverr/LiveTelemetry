@@ -1,17 +1,12 @@
-public class TextLayout {
+class TextLayout extends GuiObject {
 
     //==========   ПЕРЕМЕННЫЕ   ==========//
 
-    protected float _x = 0;
-    protected float _y = 0;
-
-    protected float _width = -1;
-    protected float _height = -1;
-
     protected String _text = "";
-    protected int _textSize = 24;
-    public color _textColor = color(255);
-    public color _textHoverColor = color(255);
+    protected float _textSize = 24;
+    protected color _textColor = color(255);
+    protected color _textHoverColor = color(255);
+    protected PFont _font = Roboto_reg;
 
     protected float _horIndent = -1;
     protected float _vertIndent = -1;
@@ -24,12 +19,20 @@ public class TextLayout {
         _width = width;
         _height = height;
         _text = text;
+        _horIndent = -1;
+        _vertIndent = -1;
     }
 
     public TextLayout(String text, float horIndent, float vertIndent) {
+        _width = -1;
+        _height = -1;
         _text = text;
         _horIndent = horIndent;
         _vertIndent = vertIndent;
+    }
+
+    public TextLayout(String text) {
+        this(text, 0, 0);
     }
 
 
@@ -42,12 +45,12 @@ public class TextLayout {
 
     protected void update() {        
         textSize(_textSize);
-        float textWidth = textWidth(_text);        
+        float textWidth = textWidth(_text);   
 
         if(_horIndent != -1 && _vertIndent != -1){
             _width = textWidth + 2 * _horIndent;
             _height = _textSize + 2 * _vertIndent;
-        }else{
+        }else if(_width != -1 && _height != -1){
             _horIndent = (_width - textWidth) / 2;
             _vertIndent = (_height - _textSize) / 2;
         }
@@ -62,10 +65,10 @@ public class TextLayout {
             update();
         }
 
-        fill(_textColor);
-        textSize(_textSize);
+        fill(_textColor);        
+        textFont(_font, _textSize);
         textAlign(CENTER, BOTTOM);
-        text(_text, _x + _width / 2, _y + _height / 2 + _textSize / 2);        
+        text(_text, _x + _width / 2, _y + _height / 2 + _textSize / 2 + 1);        
     }
 
 
@@ -86,18 +89,22 @@ public class TextLayout {
 
     //==========   PUBLIC МЕТОДЫ: СЕТТЕРЫ   ==========//
 
-    public void moveTo(float x, float y){
-        _x = x;
-        _y = y;
-    }
-
     public void setText(String text){
         _text = text;
         update();
     }
 
-    public void setTextSize(int textSize){
+    public void setTextSize(float textSize){
         _textSize = textSize;
+        update();
+    }
+
+    public void setTextColor(color textColor){
+        _textColor = textColor;
+    }
+
+    public void setFont(PFont font){
+        _font = font;
         update();
     }
 

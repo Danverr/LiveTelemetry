@@ -6,8 +6,8 @@ public class Button extends TextLayout {
 
     String _callback;
 
-    public color _buttonColor = color(0);
-    public color _buttonHoverColor = color(128);
+    protected color _buttonColor = color(0);
+    protected color _buttonHoverColor = color(128);
     
 
     
@@ -25,6 +25,10 @@ public class Button extends TextLayout {
         _context = context;
         _context.registerMethod("mouseEvent", this);
         _callback = callback;
+    }
+
+    public Button(PApplet context, String text, String callback) {        
+        this(context, text, callback, 0, 0);
     }
 
 
@@ -65,15 +69,26 @@ public class Button extends TextLayout {
         if (isMouseOver() && _context.mousePressed) fill(color(_textHoverColor, 128));
         else if (isMouseOver()) fill(_textHoverColor);
         else fill(_textColor);
-        
-        textAlign(CENTER, BOTTOM);
-        textSize(_textSize);        
-        text(_text, _x + _width / 2, _y + _height / 2 + _textSize / 2);
+
+        textFont(_font, _textSize);
+        textAlign(CENTER, BOTTOM);        
+        text(_text, _x + _width / 2, _y + _height / 2 + _textSize / 2 + 1);
     }
 
 
 
     //==========   PUBLIC МЕТОДЫ: СЕТТЕРЫ   ==========//
 
+    public void setButtonColor(color buttonColor){
+        _buttonColor = buttonColor;
+    }
 
-}   
+    public void setButtonHoverColor(color buttonHoverColor){
+        _buttonHoverColor = buttonHoverColor;
+    }
+
+    public void setTextHoverColor(color textHoverColor){
+        _textHoverColor = textHoverColor;
+    }
+
+}
