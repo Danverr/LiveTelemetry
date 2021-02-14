@@ -1,8 +1,7 @@
-public class Timer extends GuiObject {
+class Timer extends Layout {
 
-    PApplet _context;
+    private PApplet _context;
 
-    private Layout _layout;
     private TextLayout _missionTime;
     private TextLayout _localTime;
 
@@ -10,37 +9,29 @@ public class Timer extends GuiObject {
     private int _countdown = 10 * 1000; // 10 секунд обратный отсчет
     
     Timer(PApplet context) {
-        _context = context;
-        _context.registerMethod("mouseEvent", this);
+        super(2);
+        setOrientation(VERTICAL);
+        setSpacing(8);
 
-        _layout = new Layout(2);
-        _layout.setOrientation(VERTICAL);
-        _layout.setSpacing(8);
+        _context = context;
         
         _missionTime = new TextLayout(_context, getMissionTime());
         _missionTime.setFont(RobotoMono_med);
         _missionTime.setTextSize(36);
         _missionTime.setTextColor(color(0));
-        _layout.add(_missionTime);
+        add(_missionTime);
         
         _localTime = new TextLayout(_context, getLocalTime());
         _localTime.setFont(RobotoMono_reg);
         _localTime.setTextSize(18);
         _localTime.setTextColor(color(0, 128));
-        _layout.add(_localTime);
+        add(_localTime);
     }
 
-    public void mouseEvent(MouseEvent event) {
-        switch (event.getAction()) {
-            case MouseEvent.CLICK:
-                _startTime = millis() + _countdown;
-                break;
-        }
-    }
-
-    private void update(){
+    protected void update(){
         _missionTime.setText(getMissionTime());
         _localTime.setText(getLocalTime());
+        super.update();
     }
 
     public String getMissionTime() {
@@ -64,23 +55,8 @@ public class Timer extends GuiObject {
         return time + " " + date;
     }
 
-    public void draw(){
-        update();
-        _layout.draw();
+    public void setStartTime(){
+        _startTime = millis() + _countdown;
     }
 
-    public void moveTo(float x, float y){
-        update();
-        _layout.moveTo(x, y);
-    }
-
-    public float getWidth(){
-        update();
-        return _layout.getWidth();
-    }
-    
-    public float getHeight(){
-        update();
-        return _layout.getHeight();
-    }
 }

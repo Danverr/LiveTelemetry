@@ -1,33 +1,43 @@
-class LeftSidebar {
+public class LeftSidebar extends Layout {
 
     PApplet _context;
 
-    private float _x = 0;
-    private float _y = 0;
+    private Timer _timer;
+    private FlightStages _flightStages;
 
-    private float _width = SIDEBAR_WIDTH;
-    private float _height = -1;
-
-    private Layout _layout;
-    Timer _timer;
+    private boolean _isFlight = false;
 
     LeftSidebar(PApplet context) {
-        _context = context;
-        _height =  _context.height - STATUS_BAR_HEIGHT;
+        super(SIDEBAR_WIDTH, context.height - STATUS_BAR_HEIGHT, 4);
         
-        _layout = new Layout(_width, _height, 4);
-        _layout.setOrientation(VERTICAL);
-        _layout.setBackgroundColor(color(255, 255 * 0.2));
-        _layout.setIndents(64);
-        _layout.moveTo(0, STATUS_BAR_HEIGHT);
+        _context = context;
+        _context.registerMethod("mouseEvent", this);
+        
+        setOrientation(VERTICAL);
+        setBackgroundColor(color(255, 255 * 0.2));
+        setAlignType(SPACE_EVENLY);
+        moveTo(0, STATUS_BAR_HEIGHT);
         
         // Таймер
         _timer = new Timer(_context);
-        _layout.add(_timer);
+        add(_timer);
+
+        // Стадии полета
+        _flightStages = new FlightStages(_context);
+        add(_flightStages);
     }
 
-    public void draw() {
-        _layout.draw();        
+    public void mouseEvent(MouseEvent event) {
+        switch (event.getAction()) {
+            case MouseEvent.CLICK:
+                if(!_isFlight){
+                    _isFlight = true;
+                    _timer.setStartTime();
+                }
+                
+                _flightStages.nextStage(_timer.getMissionTime());                
+                break;
+        }
     }
 
 }

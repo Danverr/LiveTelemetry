@@ -4,67 +4,89 @@ final int VERTICAL = 1;
 final int FORWARD = 0;
 final int BACKWARD = 1;
 
-final int LEFT_ALIGHT = 0;
-final int RIGHT_ALIGN = 1;
-final int CENTER_ALIGN = 2;
+// final int LEFT = system variable;
+// final int CENTER = system variable;
+// final int RIGHT = system variable;
+
+final int PACKED = 0;
+final int SPACE_BETWEEN = 1;
+final int SPACE_EVENLY = 2;
 
 public class Layout extends GuiObject {
 
     //==========   ПЕРЕМЕННЫЕ   ==========// 
 
-    protected GuiObject[] _list;
+    protected GuiObject[] _layout;
 
     protected float _spacing = 0;
-    protected float _indents = 0;
+    protected float _padding = 0;
     protected int _size = 0;
 
     protected int _orientation = HORIZONTAL;
     protected int _direction = FORWARD;
-    protected int _align = CENTER_ALIGN;
+    protected int _align = CENTER;
+    protected int _alignType = PACKED;
 
     protected color _backgroundColor = color(0, 1);
+
+    PVector _layoutSize;
+    PVector _contentSize;
 
 
 
     //==========   КОНСТРУКТОРЫ   ==========// 
+
+    Layout(){
+    }
+    
+    Layout(int size){
+        _layout = new GuiObject[size];
+    }
 
     Layout(float width, float height, int size){
         this(size);
         _width = width;
         _height = height;
     }
-    
-    Layout(int size){
-        _list = new GuiObject[size];
-    }
 
 
 
     //==========   PROTECTED МЕТОДЫ   ==========// 
 
-    protected PVector update(){        
+    protected void update(){
+        updateSize();
+
         PVector pos = new PVector(_x, _y);
-        PVector layoutSize = getSize();
         PVector mainAxis = getMainAxis(true);
         PVector crossAxis = getCrossAxis();
 
-        pos.add(mainAxis.copy().mult(_indents));
+        if(_size > 0){
+            float freeSpace = multByCoords(_layoutSize, mainAxis).mag();
+            freeSpace -= multByCoords(_contentSize, mainAxis).mag() + 2 * _padding;
 
-        for(int i = 0; i < _size; i++){
-            PVector itemSize = new PVector(_list[i].getWidth(), _list[i].getHeight());
-            PVector itemPos = pos.copy();
-
-            if (_align == CENTER_ALIGN){
-                itemPos.add(multByCoords(layoutSize.copy().sub(itemSize).div(2), crossAxis));
-            } else if (_align == RIGHT_ALIGN){
-                itemPos.add(multByCoords(layoutSize.copy().sub(itemSize), crossAxis));
+            if (_alignType == SPACE_BETWEEN){
+                _spacing = freeSpace / (_size - 1);
+            } else if (_alignType == SPACE_EVENLY){
+                _spacing = freeSpace / (_size + 1);                
             }
-
-            _list[i].moveTo(itemPos.x, itemPos.y);
-            pos.add(multByCoords(itemSize.copy().add(_spacing, _spacing), mainAxis));
         }
 
-        return layoutSize;
+        pos.add(mainAxis.copy().mult(_padding));
+        if (_alignType == SPACE_EVENLY) pos.add(mainAxis.copy().mult(_spacing));
+
+        for(int i = 0; i < _size; i++){
+            PVector itemSize = new PVector(_layout[i].getWidth(), _layout[i].getHeight());
+            PVector itemPos = pos.copy();
+
+            if (_align == CENTER){
+                itemPos.add(multByCoords(_layoutSize.copy().sub(itemSize).div(2), crossAxis));
+            } else if (_align == RIGHT){
+                itemPos.add(multByCoords(_layoutSize.copy().sub(itemSize), crossAxis));
+            }
+
+            _layout[i].moveTo(itemPos.x, itemPos.y);
+            pos.add(multByCoords(itemSize.copy().add(_spacing, _spacing), mainAxis));
+        }
     }
 
     protected PVector getMainAxis(boolean withDirection) {        
@@ -78,30 +100,36 @@ public class Layout extends GuiObject {
         return new PVector(int(_orientation == VERTICAL), int(_orientation == HORIZONTAL));
     }
 
-    protected PVector getSize() {
-        if(_width != -1 && _height != -1) return new PVector(_width, _height);
-        if(_size == 0) return new PVector(0, 0);
-
+    protected void updateSize() {
         PVector mainAxis = getMainAxis(false);
         PVector crossAxis = getCrossAxis();
         PVector layoutSize = new PVector(0, 0);
-            
-        layoutSize.add(mainAxis.copy().mult(2 * _indents + (_size - 1) * _spacing));
+        PVector contentSize = new PVector(0, 0);
+
+        if(_width != -1 && _height != -1) {
+            layoutSize = new PVector(_width, _height);
+        }else if(_size != 0) {
+            layoutSize.add(mainAxis.copy().mult(2 * _padding + (_size - 1) * _spacing));
+        }        
 
         for(int i = 0; i < _size; i++){
-            PVector itemSize = new PVector(_list[i].getWidth(), _list[i].getHeight());
+            PVector itemSize = new PVector(_layout[i].getWidth(), _layout[i].getHeight());
             PVector itemMainCoord = multByCoords(itemSize, mainAxis);
             PVector itemCrossCoord = multByCoords(itemSize, crossAxis);
+            contentSize.add(itemSize);
 
-            layoutSize.add(itemMainCoord);
+            if(_width == -1 && _height == -1) {
+                layoutSize.add(itemMainCoord);            
 
-            if(itemCrossCoord.mag() > multByCoords(layoutSize, crossAxis).mag()){
-                layoutSize = multByCoords(layoutSize, mainAxis);
-                layoutSize.add(itemCrossCoord);
+                if(itemCrossCoord.mag() > multByCoords(layoutSize, crossAxis).mag()){
+                    layoutSize = multByCoords(layoutSize, mainAxis);
+                    layoutSize.add(itemCrossCoord);
+                }
             }
         }
 
-        return layoutSize;
+        _layoutSize = layoutSize;
+        _contentSize = contentSize;
     }
 
 
@@ -109,31 +137,33 @@ public class Layout extends GuiObject {
     //==========   PUBLIC МЕТОДЫ   ==========// 
 
     public void draw(){
-        PVector layoutSize = update();
+        update();
 
         // Фон
         noStroke();
         fill(_backgroundColor);
-        rect(_x, _y, layoutSize.x, layoutSize.y);
+        rect(_x, _y, _layoutSize.x, _layoutSize.y);
 
         // Внутренние компоненты
         for(int i = 0; i < _size; i++){
-            _list[i].draw();
+            _layout[i].draw();
         }
     }
 
     public void add(GuiObject item){
-        _list[_size++] = item;
+        _layout[_size++] = item;
     }
 
     //==========   PUBLIC МЕТОДЫ: ГЕТТЕРЫ   ==========//
 
     public float getWidth(){
-        return getSize().x;
+        updateSize();
+        return _layoutSize.x;
     }
 
     public float getHeight(){
-        return getSize().y;
+        updateSize();
+        return _layoutSize.y;
     }
 
 
@@ -144,8 +174,8 @@ public class Layout extends GuiObject {
         _spacing = spacing;
     }
 
-    public void setIndents(float indents){
-        _indents = indents;
+    public void setPadding(float padding){
+        _padding = padding;
     }
     
     public void setOrientation(int orientation){
@@ -158,6 +188,10 @@ public class Layout extends GuiObject {
 
     public void setAlign(int align){
         _align = align;
+    }
+
+    public void setAlignType(int alignType){
+        _alignType = alignType;
     }
 
     public void setBackgroundColor(color backgroundColor){
