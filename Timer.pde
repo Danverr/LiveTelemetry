@@ -17,13 +17,13 @@ public class Timer extends GuiObject {
         _layout.setOrientation(VERTICAL);
         _layout.setSpacing(8);
         
-        _missionTime = new TextLayout(getMissionTime());
+        _missionTime = new TextLayout(_context, getMissionTime());
         _missionTime.setFont(RobotoMono_med);
         _missionTime.setTextSize(36);
         _missionTime.setTextColor(color(0));
         _layout.add(_missionTime);
         
-        _localTime = new TextLayout(getLocalTime());
+        _localTime = new TextLayout(_context, getLocalTime());
         _localTime.setFont(RobotoMono_reg);
         _localTime.setTextSize(18);
         _localTime.setTextColor(color(0, 128));
@@ -38,7 +38,12 @@ public class Timer extends GuiObject {
         }
     }
 
-    private String getMissionTime() {
+    private void update(){
+        _missionTime.setText(getMissionTime());
+        _localTime.setText(getLocalTime());
+    }
+
+    public String getMissionTime() {
         int ms = _startTime != -1 ? millis() - _startTime : -_countdown;
         String T = "T" + (ms < 0 ? "-" : "+");
         ms = abs(ms);
@@ -53,27 +58,29 @@ public class Timer extends GuiObject {
         return T + time;
     }
 
-    private String getLocalTime() {
+    public String getLocalTime() {
         String time = nf(hour(), 2) + ":" + nf(minute(), 2) + ":" + nf(second(), 2);
         String date = nf(day(), 2) + "." + nf(month(), 2) + "." + year();
         return time + " " + date;
     }
 
     public void draw(){
-        _missionTime.setText(getMissionTime());
-        _localTime.setText(getLocalTime());
+        update();
         _layout.draw();
     }
 
     public void moveTo(float x, float y){
-        _layout.moveTo(x, y);        
+        update();
+        _layout.moveTo(x, y);
     }
 
     public float getWidth(){
+        update();
         return _layout.getWidth();
     }
     
     public float getHeight(){
+        update();
         return _layout.getHeight();
     }
 }

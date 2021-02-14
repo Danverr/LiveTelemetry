@@ -17,6 +17,7 @@ class LeftSidebar {
         
         _layout = new Layout(_width, _height, 4);
         _layout.setOrientation(VERTICAL);
+        _layout.setBackgroundColor(color(255, 255 * 0.2));
         _layout.setIndents(64);
         _layout.moveTo(0, STATUS_BAR_HEIGHT);
         
@@ -25,16 +26,8 @@ class LeftSidebar {
         _layout.add(_timer);
     }
 
-    public void draw() {  
-
-        // Фон
-        noStroke();
-        fill(255, 255 * 0.2);
-        rect(0, STATUS_BAR_HEIGHT, _width, _height);
-
-        // Внутренние компоненты
-        _layout.draw();
-        
+    public void draw() {
+        _layout.draw();        
     }
 
 }

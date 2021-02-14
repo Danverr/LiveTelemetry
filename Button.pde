@@ -2,8 +2,6 @@ public class Button extends TextLayout {
 
     //==========   ПЕРЕМЕННЫЕ   ==========//
 
-    protected PApplet _context;
-
     String _callback;
 
     protected color _buttonColor = color(0);
@@ -14,17 +12,17 @@ public class Button extends TextLayout {
     //==========   КОНСТРУКТОРЫ   ==========//
 
     public Button(PApplet context, float width, float height, String text, String callback) {
-        super(width, height, text);
-        _context = context;
+        super(context, width, height, text);
         _context.registerMethod("mouseEvent", this);
         _callback = callback;
+        _isInteractive = true;
     }
 
     public Button(PApplet context, String text, String callback, float horIndent, float vertIndent) {
-        super(text, horIndent, vertIndent);
-        _context = context;
+        super(context, text, horIndent, vertIndent);
         _context.registerMethod("mouseEvent", this);
         _callback = callback;
+        _isInteractive = true;
     }
 
     public Button(PApplet context, String text, String callback) {        
@@ -66,13 +64,7 @@ public class Button extends TextLayout {
         rect(_x, _y, _width, _height);
 
         // Текст
-        if (isMouseOver() && _context.mousePressed) fill(color(_textHoverColor, 128));
-        else if (isMouseOver()) fill(_textHoverColor);
-        else fill(_textColor);
-
-        textFont(_font, _textSize);
-        textAlign(CENTER, BOTTOM);        
-        text(_text, _x + _width / 2, _y + _height / 2 + _textSize / 2 + 1);
+        super.draw();
     }
 
 

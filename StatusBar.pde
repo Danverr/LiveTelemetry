@@ -6,7 +6,7 @@ class StatusBar {
 
     private PApplet _context;
 
-    private Layout layout; 
+    private Layout _layout; 
     
     StatusBar(PApplet context) {
         _context = context;
@@ -22,9 +22,10 @@ class StatusBar {
         String[] regularCallbacks = {"changeCamera", "defaultCallback"};
 
         // Инициализация контейнера
-        layout = new Layout(4);
-        layout.setIndents(20);
-        layout.moveTo(0, 0);
+        _layout = new Layout(_context.width, STATUS_BAR_HEIGHT, 4);
+        _layout.setIndents(20);
+        _layout.setBackgroundColor(color(255, 128));
+        _layout.moveTo(0, 0);
 
         // Инициализация опасных кнопок
         for (int i = 0; i < dangerNames.length; i++){
@@ -34,7 +35,7 @@ class StatusBar {
             btn.setButtonHoverColor(DANGER_COLOR);
             btn.setTextColor(color(0));
             btn.setTextHoverColor(color(255));
-            layout.add(btn);
+            _layout.add(btn);
         }
 
         // Инициализация обычных кнопок
@@ -45,21 +46,13 @@ class StatusBar {
             btn.setButtonHoverColor(color(0, 255 * 0.2));
             btn.setTextColor(color(0));
             btn.setTextHoverColor(color(0));
-            layout.add(btn);
+            _layout.add(btn);
         }    
 
     }
 
     public void draw() {
-        
-        // Фон
-        noStroke();
-        fill(color(255, 128));
-        rect(0, 0, width, STATUS_BAR_HEIGHT);
-
-        // Компоненты
-        layout.draw();
-
+        _layout.draw();
     }
 
 }

@@ -22,6 +22,8 @@ public class Layout extends GuiObject {
     protected int _direction = FORWARD;
     protected int _align = CENTER_ALIGN;
 
+    protected color _backgroundColor = color(0, 1);
+
 
 
     //==========   КОНСТРУКТОРЫ   ==========// 
@@ -40,7 +42,7 @@ public class Layout extends GuiObject {
 
     //==========   PROTECTED МЕТОДЫ   ==========// 
 
-    protected void update(){        
+    protected PVector update(){        
         PVector pos = new PVector(_x, _y);
         PVector layoutSize = getSize();
         PVector mainAxis = getMainAxis(true);
@@ -60,7 +62,9 @@ public class Layout extends GuiObject {
 
             _list[i].moveTo(itemPos.x, itemPos.y);
             pos.add(multByCoords(itemSize.copy().add(_spacing, _spacing), mainAxis));
-        }        
+        }
+
+        return layoutSize;
     }
 
     protected PVector getMainAxis(boolean withDirection) {        
@@ -105,8 +109,14 @@ public class Layout extends GuiObject {
     //==========   PUBLIC МЕТОДЫ   ==========// 
 
     public void draw(){
-        update(); 
+        PVector layoutSize = update();
 
+        // Фон
+        noStroke();
+        fill(_backgroundColor);
+        rect(_x, _y, layoutSize.x, layoutSize.y);
+
+        // Внутренние компоненты
         for(int i = 0; i < _size; i++){
             _list[i].draw();
         }
@@ -148,6 +158,10 @@ public class Layout extends GuiObject {
 
     public void setAlign(int align){
         _align = align;
+    }
+
+    public void setBackgroundColor(color backgroundColor){
+        _backgroundColor = backgroundColor;
     }
 
 }
