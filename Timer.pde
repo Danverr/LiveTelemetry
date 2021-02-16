@@ -1,27 +1,23 @@
 class Timer extends Layout {
 
-    private PApplet _context;
-
-    private TextLayout _missionTime;
-    private TextLayout _localTime;
+    private Text _missionTime;
+    private Text _localTime;
 
     private int _startTime = -1;
     private int _countdown = 10 * 1000; // 10 секунд обратный отсчет
     
     Timer(PApplet context) {
-        super(2);
+        super(context, 2);
         setOrientation(VERTICAL);
         setSpacing(8);
-
-        _context = context;
         
-        _missionTime = new TextLayout(_context, getMissionTime());
+        _missionTime = new Text(_context, getMissionTime());
         _missionTime.setFont(RobotoMono_med);
         _missionTime.setTextSize(36);
         _missionTime.setTextColor(color(0));
         add(_missionTime);
         
-        _localTime = new TextLayout(_context, getLocalTime());
+        _localTime = new Text(_context, getLocalTime());
         _localTime.setFont(RobotoMono_reg);
         _localTime.setTextSize(18);
         _localTime.setTextColor(color(0, 128));

@@ -19,18 +19,19 @@ public class Layout extends GuiObject {
     protected GuiObject[] _layout;
 
     protected float _spacing = 0;
-    protected float _padding = 0;
+    protected float _padding[] = { 0, 0, 0, 0 }; // mainBeg, mainEnd, crossLeft, crossRight
     protected int _size = 0;
 
     protected int _orientation = HORIZONTAL;
     protected int _direction = FORWARD;
     protected int _align = CENTER;
-    protected int _alignType = PACKED;
+    protected int _alignType = PACKED; // При не фиксированном размере может быть только PACKED!
 
     protected color _backgroundColor = color(0, 1);
 
     PVector _layoutSize;
     PVector _contentSize;
+    protected boolean _fixedSize = false;
 
 
 
@@ -39,14 +40,16 @@ public class Layout extends GuiObject {
     Layout(){
     }
     
-    Layout(int size){
+    Layout(PApplet context, int size){
+        _context = context; 
         _layout = new GuiObject[size];
     }
 
-    Layout(float width, float height, int size){
-        this(size);
+    Layout(PApplet context, float width, float height, int size){
+        this(context, size);     
         _width = width;
         _height = height;
+        _fixedSize = true;
     }
 
 
@@ -60,33 +63,93 @@ public class Layout extends GuiObject {
         PVector mainAxis = getMainAxis(true);
         PVector crossAxis = getCrossAxis();
 
-        if(_size > 0){
-            float freeSpace = multByCoords(_layoutSize, mainAxis).mag();
-            freeSpace -= multByCoords(_contentSize, mainAxis).mag() + 2 * _padding;
-
-            if (_alignType == SPACE_BETWEEN){
-                _spacing = freeSpace / (_size - 1);
-            } else if (_alignType == SPACE_EVENLY){
-                _spacing = freeSpace / (_size + 1);                
-            }
-        }
-
-        pos.add(mainAxis.copy().mult(_padding));
+        // Делаем первый отступ от края по главной оси
+        pos.add(mainAxis.copy().mult(_padding[0]));
+        
+        // Если SPACE_EVENLY, то нужно сделать еще отступ
         if (_alignType == SPACE_EVENLY) pos.add(mainAxis.copy().mult(_spacing));
 
         for(int i = 0; i < _size; i++){
+            // Считаем размеры и позицию компонента Layout
             PVector itemSize = new PVector(_layout[i].getWidth(), _layout[i].getHeight());
             PVector itemPos = pos.copy();
-
+            
+            // Рассчитываем новую позицию с учетом выравнивания
             if (_align == CENTER){
                 itemPos.add(multByCoords(_layoutSize.copy().sub(itemSize).div(2), crossAxis));
             } else if (_align == RIGHT){
                 itemPos.add(multByCoords(_layoutSize.copy().sub(itemSize), crossAxis));
             }
 
+            // Задаем новую позицию
             _layout[i].moveTo(itemPos.x, itemPos.y);
+
+            // Двигаем нашу позицию по главной оси
             pos.add(multByCoords(itemSize.copy().add(_spacing, _spacing), mainAxis));
         }
+    }
+
+    protected void updateSize() {
+        _contentSize = getContentSize();
+        _layoutSize = getLayoutSize();
+    }
+
+    protected PVector getLayoutSize(){ // Вызывать только с актуальным _contentSize!!!
+        PVector mainAxis = getMainAxis(false);
+        PVector crossAxis = getCrossAxis();
+        PVector layoutSize = new PVector(0, 0);
+
+        if(_fixedSize) {
+            // Если размеры уже заданы, обновляем растояния между объектами
+            layoutSize = new PVector(_width, _height);
+            
+            float freeSpace = multByCoords(layoutSize, mainAxis).mag();
+            freeSpace -= multByCoords(_contentSize, mainAxis).mag();
+            freeSpace -= _padding[0] + _padding[1];
+
+            if (_alignType == SPACE_BETWEEN){
+                if(_size == 1) _spacing = 0;
+                else _spacing = freeSpace / (_size - 1);
+            } else if (_alignType == SPACE_EVENLY){
+                _spacing = freeSpace / (_size + 1);         
+            }            
+        }else if(_alignType == PACKED && _size != 0) { 
+            // Если размеры не заданы и внутри Layout что-то есть,
+            // посчитаем размер исходя из отступов и размера контента
+            layoutSize = _contentSize.copy();
+            layoutSize.add(mainAxis.copy().mult(_padding[0] + _padding[1] + (_size - 1) * _spacing));
+            layoutSize.add(crossAxis.copy().mult(_padding[2] + _padding[3]));
+        }
+
+        return layoutSize;
+    }
+
+    protected PVector getContentSize(){
+        PVector mainAxis = getMainAxis(false);
+        PVector crossAxis = getCrossAxis();
+        PVector contentSize = new PVector(0, 0);
+
+        for(int i = 0; i < _size; i++){
+            // Считаем размеры компонента Layout
+            PVector itemSize = new PVector(_layout[i].getWidth(), _layout[i].getHeight());
+            PVector itemMainSize = multByCoords(itemSize, mainAxis);
+            PVector itemCrossSize = multByCoords(itemSize, crossAxis);
+            contentSize.add(itemMainSize);
+            
+            // Считаем максимальный размер по поперечной оси
+            // Это и есть размер контента по поперечной оси
+            if(itemCrossSize.mag() > multByCoords(contentSize, crossAxis).mag()){
+                contentSize = multByCoords(contentSize, mainAxis);
+                contentSize.add(itemCrossSize);
+            }
+        }
+
+        return contentSize;
+    }
+
+    protected boolean isMouseOver(){
+        updateSize();
+        return mouseX >= _x && mouseX <= _x + _layoutSize.x && mouseY >= _y && mouseY <= _y + + _layoutSize.y;
     }
 
     protected PVector getMainAxis(boolean withDirection) {        
@@ -98,38 +161,6 @@ public class Layout extends GuiObject {
 
     protected PVector getCrossAxis() {
         return new PVector(int(_orientation == VERTICAL), int(_orientation == HORIZONTAL));
-    }
-
-    protected void updateSize() {
-        PVector mainAxis = getMainAxis(false);
-        PVector crossAxis = getCrossAxis();
-        PVector layoutSize = new PVector(0, 0);
-        PVector contentSize = new PVector(0, 0);
-
-        if(_width != -1 && _height != -1) {
-            layoutSize = new PVector(_width, _height);
-        }else if(_size != 0) {
-            layoutSize.add(mainAxis.copy().mult(2 * _padding + (_size - 1) * _spacing));
-        }        
-
-        for(int i = 0; i < _size; i++){
-            PVector itemSize = new PVector(_layout[i].getWidth(), _layout[i].getHeight());
-            PVector itemMainCoord = multByCoords(itemSize, mainAxis);
-            PVector itemCrossCoord = multByCoords(itemSize, crossAxis);
-            contentSize.add(itemSize);
-
-            if(_width == -1 && _height == -1) {
-                layoutSize.add(itemMainCoord);            
-
-                if(itemCrossCoord.mag() > multByCoords(layoutSize, crossAxis).mag()){
-                    layoutSize = multByCoords(layoutSize, mainAxis);
-                    layoutSize.add(itemCrossCoord);
-                }
-            }
-        }
-
-        _layoutSize = layoutSize;
-        _contentSize = contentSize;
     }
 
 
@@ -154,7 +185,7 @@ public class Layout extends GuiObject {
         _layout[_size++] = item;
     }
 
-    //==========   PUBLIC МЕТОДЫ: ГЕТТЕРЫ   ==========//
+    //==========   PUBLIC МЕТОДЫ: GETTERS   ==========//
 
     public float getWidth(){
         updateSize();
@@ -168,14 +199,26 @@ public class Layout extends GuiObject {
 
 
 
-    //==========   PUBLIC МЕТОДЫ: СЕТТЕРЫ   ==========//
+    //==========   PUBLIC МЕТОДЫ: SETTERS   ==========//
 
     public void setSpacing(float spacing){
         _spacing = spacing;
     }
 
+    public void setPadding(float mainBeg, float mainEnd, float crossLeft, float crossRight){
+        _padding[0] = mainBeg;
+        _padding[1] = mainEnd;
+        _padding[2] = crossLeft;
+        _padding[3] = crossRight;
+    }
+
+    public void setPadding(float mainPadding, float crossPadding){
+        _padding[0] = _padding[1] = mainPadding;
+        _padding[2] = _padding[3] = crossPadding;
+    }
+
     public void setPadding(float padding){
-        _padding = padding;
+        _padding[0] = _padding[1] = _padding[2] = _padding[3] = padding;
     }
     
     public void setOrientation(int orientation){

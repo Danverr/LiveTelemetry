@@ -1,51 +1,52 @@
-void defaultCallback() {
-    println("Click!");
-};
+class StatusBar {
 
-class StatusBar extends Layout {
-
-    private PApplet _context;
+    Layout _layout;
+    Layout _leftButtons;
+    
+    Button _exitButton;
     
     StatusBar(PApplet context) {
-        super(context.width, STATUS_BAR_HEIGHT, 4);
-
-        _context = context;
+        _layout = new Layout(context, context.width, STATUS_BAR_HEIGHT, 2);
+        _leftButtons = new Layout(context, 4);
 
         // Параметры
         int textSize = 14;
         float textVertIndent = (STATUS_BAR_HEIGHT - textSize) / 2;
 
-        String[] dangerNames = {"Запуск", "Калибровка"};
-        String[] dangerCallbacks = {"defaultCallback", "defaultCallback"};
+        String[] names = {"Запуск", "Калибровка", "Камера", "Цвет"};
+        String[] callbacks = {"", "", "changeCamera", ""};
+        color[] hoverColors = {DANGER_COLOR, WARNING_COLOR, color(0, 51), color(0, 51)};
 
-        String[] regularNames = {"Камера", "Цвет"};
-        String[] regularCallbacks = {"changeCamera", "defaultCallback"};
+        // Инициализация контейнеров
+        _layout.setPadding(20, 0, 0, 0);
+        _layout.setBackgroundColor(color(255, 128));
+        _layout.setAlignType(SPACE_BETWEEN);
 
-        // Инициализация контейнера
-        setPadding(20);
-        setBackgroundColor(color(255, 128));
-
-        // Инициализация опасных кнопок
-        for (int i = 0; i < dangerNames.length; i++){
-            Button btn = new Button(context, dangerNames[i], dangerCallbacks[i], 10, textVertIndent);
+        // Инициализация кнопок слева
+        for (int i = 0; i < names.length; i++){
+            Button btn = new Button(context, names[i], "");
+            btn.setCallback(callbacks[i]);
+            btn.setPadding(10, textVertIndent);
             btn.setTextSize(textSize);
             btn.setButtonColor(TRANSPARENT);
-            btn.setButtonHoverColor(DANGER_COLOR);
-            btn.setTextColor(color(0));
-            btn.setTextHoverColor(color(255));
-            add(btn);
+            btn.setButtonHoverColor(hoverColors[i]);
+            _leftButtons.add(btn);
         }
 
-        // Инициализация обычных кнопок
-        for (int i = 0; i < regularNames.length; i++){
-            Button btn = new Button(context, regularNames[i], regularCallbacks[i], 10, textVertIndent);
-            btn.setTextSize(textSize);
-            btn._buttonColor = TRANSPARENT;
-            btn.setButtonHoverColor(color(0, 255 * 0.2));
-            btn.setTextColor(color(0));
-            btn.setTextHoverColor(color(0));
-            add(btn);
-        }
+        // Инициализация кнопки выхода
+        Button _exitButton = new Button(context, 34, STATUS_BAR_HEIGHT, "", "exitIcon.svg");
+        _exitButton.setCallback("exit");
+        _exitButton.setButtonColor(TRANSPARENT);
+        _exitButton.setButtonHoverColor(DANGER_COLOR);
+        _exitButton.setContentColor(color(128));
+        _exitButton.setContentHoverColor(color(255));
+            
+        _layout.add(_leftButtons);
+        _layout.add(_exitButton);
+    }
+
+    public void draw(){
+        _layout.draw();
     }
 
 }

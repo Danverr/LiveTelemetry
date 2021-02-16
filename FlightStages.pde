@@ -13,7 +13,7 @@ class FlightStages extends Layout {
     private FlightStage[] _flightStages = new FlightStage[stages.length];
 
     FlightStages(PApplet context) {
-        super(6);
+        super(context, 6);
         setOrientation(VERTICAL);
         setAlign(LEFT);
         setSpacing(16);

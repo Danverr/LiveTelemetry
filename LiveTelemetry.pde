@@ -17,6 +17,7 @@ final int FPS = 30;
 
 final color TRANSPARENT = color(0, 1);
 final color DANGER_COLOR = #F36C21;
+final color WARNING_COLOR = #F7BD44;
 
 final float STATUS_BAR_HEIGHT = 24;
 final float SIDEBAR_WIDTH = 384;
