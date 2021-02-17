@@ -21,6 +21,8 @@ class Text extends GuiObject {
     //==========   PUBLIC МЕТОДЫ   ==========// 
 
     public void draw() {
+        super.draw();
+
         fill(_textColor);
         textAlign(LEFT, TOP);
         textFont(_font, _textSize);

@@ -28,10 +28,6 @@ class FlightStage extends Layout {
         add(_name);
     }
 
-    public void draw() {
-        _layout.draw();
-    }
-
     public void setTime(String time){
         _time.setText(time);
     }

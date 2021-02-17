@@ -1,5 +1,7 @@
 //==========   БИБЛИОТЕКИ   ==========//
 
+import processing.serial.*;
+
 
 
 //==========   ШРИФТЫ   ==========//
@@ -28,9 +30,14 @@ final float SIDEBAR_WIDTH = 384;
 
 Loader loader;
 StatusBar statusBar;
-LeftSidebar leftSidebar; 
+LeftSidebar leftSidebar;
+DialogWindow selectSerialPort;
+DialogWindow selectCamera;
 
-boolean showLoader = true;
+boolean showLoader = false;
+boolean cameraReady = false;
+String cameraName;
+String serialPortName;
 
 
 
@@ -49,21 +56,44 @@ void setup(){
     Roboto_med = createFont("Roboto-Medium.ttf", 24, true);
     Roboto_reg = createFont("Roboto-Regular.ttf", 24, true);
 
-    thread("initCamera");
     loader = new Loader(this);
     statusBar = new StatusBar(this);
     leftSidebar = new LeftSidebar(this);
+    
+    selectCamera = new DialogWindow(this, "Выберите камеру", new StringArrayCallback(){
+        public String[] execute(){
+            return Capture.list();
+        }
+    });
+    selectSerialPort = new DialogWindow(this, "Выберите COM порт", new StringArrayCallback(){
+        public String[] execute(){
+            return append(Serial.list(), "Test");
+        }
+    });
 }
 
 void draw(){    
     background(0);
+
+    if(selectSerialPort.available()){
+        serialPortName = selectSerialPort.getResult();
+    }
+    if(selectCamera.available()){
+        cameraName = selectCamera.getResult();
+    }
     
     if(showLoader){
         loader.draw();
-        return;
+    } else if(cameraName == null){
+        cameraReady = false;
+        selectCamera.draw();
+    } else if(serialPortName == null){
+        selectSerialPort.draw();
+    } else if(!cameraReady){
+        thread("initCamera");
+    } else {
+        drawCamera();
+        statusBar.draw();
+        leftSidebar.draw();
     }
-
-    drawCamera();
-    statusBar.draw();
-    leftSidebar.draw();
 }

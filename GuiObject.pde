@@ -8,7 +8,15 @@ abstract class GuiObject {
     protected float _width = -1;
     protected float _height = -1;
 
-    abstract public void draw();
+    protected int lastFrameCount = -1;
+
+    public void draw() {
+        lastFrameCount = _context.frameCount;
+    };
+
+    public boolean isVisible() {
+        return lastFrameCount >= _context.frameCount;
+    }
     
     public float getWidth(){
         return _width;

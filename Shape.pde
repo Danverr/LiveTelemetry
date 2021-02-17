@@ -31,6 +31,8 @@ class Shape extends GuiObject {
     //==========   PUBLIC МЕТОДЫ   ==========// 
 
     public void draw() {
+        super.draw();
+
         shapeMode(CORNER);
         fill(_shapeColor);
 

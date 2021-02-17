@@ -17,7 +17,7 @@ public class LeftSidebar {
         
         _layout.setOrientation(VERTICAL);
         _layout.setBackgroundColor(color(255, 255 * 0.2));
-        _layout.setAlignType(SPACE_EVENLY);
+        _layout.setDistribution(SPACE_EVENLY);
         _layout.moveTo(0, STATUS_BAR_HEIGHT);
         
         // Таймер
@@ -30,7 +30,7 @@ public class LeftSidebar {
 
         // Лого
         _logo = new Shape(_context, "GALAKTIKA.svg");
-        _logo.setColor(color(128));
+        _logo.setColor(color(0, 128));
         _layout.add(_logo);
     }
 

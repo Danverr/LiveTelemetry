@@ -7,6 +7,8 @@ final int BACKWARD = 1;
 // final int LEFT = system variable;
 // final int CENTER = system variable;
 // final int RIGHT = system variable;
+// final int TOP = system variable;
+// final int BOTTOM = system variable;
 
 final int PACKED = 0;
 final int SPACE_BETWEEN = 1;
@@ -25,7 +27,7 @@ public class Layout extends GuiObject {
     protected int _orientation = HORIZONTAL;
     protected int _direction = FORWARD;
     protected int _align = CENTER;
-    protected int _alignType = PACKED; // При не фиксированном размере может быть только PACKED!
+    protected int _distribution = PACKED; // При не фиксированном размере может быть только PACKED!
 
     protected color _backgroundColor = color(0, 1);
 
@@ -67,7 +69,7 @@ public class Layout extends GuiObject {
         pos.add(mainAxis.copy().mult(_padding[0]));
         
         // Если SPACE_EVENLY, то нужно сделать еще отступ
-        if (_alignType == SPACE_EVENLY) pos.add(mainAxis.copy().mult(_spacing));
+        if (_distribution == SPACE_EVENLY) pos.add(mainAxis.copy().mult(_spacing));
 
         for(int i = 0; i < _size; i++){
             // Считаем размеры и позицию компонента Layout
@@ -77,7 +79,7 @@ public class Layout extends GuiObject {
             // Рассчитываем новую позицию с учетом выравнивания
             if (_align == CENTER){
                 itemPos.add(multByCoords(_layoutSize.copy().sub(itemSize).div(2), crossAxis));
-            } else if (_align == RIGHT){
+            } else if (_align == RIGHT || _align == BOTTOM){
                 itemPos.add(multByCoords(_layoutSize.copy().sub(itemSize), crossAxis));
             }
 
@@ -107,13 +109,13 @@ public class Layout extends GuiObject {
             freeSpace -= multByCoords(_contentSize, mainAxis).mag();
             freeSpace -= _padding[0] + _padding[1];
 
-            if (_alignType == SPACE_BETWEEN){
+            if (_distribution == SPACE_BETWEEN){
                 if(_size == 1) _spacing = 0;
                 else _spacing = freeSpace / (_size - 1);
-            } else if (_alignType == SPACE_EVENLY){
+            } else if (_distribution == SPACE_EVENLY){
                 _spacing = freeSpace / (_size + 1);         
             }            
-        }else if(_alignType == PACKED && _size != 0) { 
+        }else if(_distribution == PACKED && _size != 0) { 
             // Если размеры не заданы и внутри Layout что-то есть,
             // посчитаем размер исходя из отступов и размера контента
             layoutSize = _contentSize.copy();
@@ -168,6 +170,7 @@ public class Layout extends GuiObject {
     //==========   PUBLIC МЕТОДЫ   ==========// 
 
     public void draw(){
+        super.draw();
         update();
 
         // Фон
@@ -222,19 +225,39 @@ public class Layout extends GuiObject {
     }
     
     public void setOrientation(int orientation){
+        if(orientation != VERTICAL && orientation != HORIZONTAL){
+            throw new Error("Orientation can only be VERTICAL or HORIZONTAL");
+        }
+
         _orientation = orientation;
     }
 
     public void setDirection(int direction){
+        if(direction != FORWARD && direction != BACKWARD){
+            throw new Error("Direction can only be FORWARD or BACKWARD");
+        }
+
         _direction = direction;
     }
 
     public void setAlign(int align){
+        if(_orientation == VERTICAL && align != LEFT && align != CENTER && align != RIGHT) {
+            throw new Error("Vertical align can only be LEFT, CENTER or RIGHT");
+        } else if(_orientation == HORIZONTAL && align != TOP && align != CENTER && align != BOTTOM) {
+            throw new Error("Horizontal align can only be TOP, CENTER or BOTTOM");
+        }
+
         _align = align;
     }
 
-    public void setAlignType(int alignType){
-        _alignType = alignType;
+    public void setDistribution(int distribution){
+        if(distribution != PACKED && distribution != SPACE_BETWEEN && distribution != SPACE_EVENLY) {
+            throw new Error("Align type can only be PACKED, SPACE_BETWEEN or SPACE_EVENLY");
+        } else if (!_fixedSize && distribution != PACKED) {
+            throw new Error("Align type of Layout with non-fixed size can only be PACKED");
+        }
+
+        _distribution = distribution;
     }
 
     public void setBackgroundColor(color backgroundColor){

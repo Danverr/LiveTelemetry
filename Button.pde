@@ -4,15 +4,15 @@ public class Button extends GuiObject {
 
     Layout _layout;
 
-    String _callback = "";
+    Callback _callback;
 
     protected color _buttonColor = color(0);
     protected color _buttonHoverColor = color(128);
     
     Text _text;
     Shape _icon;
-    protected color _contentColor = color(0);
-    protected color _contentHoverColor = color(0);
+    protected color _contentColor = color(255);
+    protected color _contentHoverColor = color(255);
 
 
     
@@ -39,7 +39,7 @@ public class Button extends GuiObject {
         
         if(_width != -1 && _height != -1){
             _layout = new Layout(context, width, height, size);
-            _layout.setAlignType(SPACE_EVENLY);
+            _layout.setDistribution(SPACE_EVENLY);
         }else{
             _layout = new Layout(context, size);
         }
@@ -57,13 +57,13 @@ public class Button extends GuiObject {
     //==========   СОБЫТИЯ   ==========//
 
     public void mouseEvent(MouseEvent event) {
-        if(_callback == "" || !_layout.isMouseOver()){
+        if(_callback == null || !isVisible() || !_layout.isMouseOver()){
             return;
         }
 
         switch (event.getAction()) {
             case MouseEvent.CLICK:                
-                method(_callback);
+                _callback.execute();
                 break;
         }
     }
@@ -74,6 +74,8 @@ public class Button extends GuiObject {
 
     @Override
     public void draw(){
+        super.draw();
+
         boolean isMouseOver = _layout.isMouseOver();
         
         if (isMouseOver && _context.mousePressed){             
@@ -103,7 +105,7 @@ public class Button extends GuiObject {
     
     public float getWidth(){
         return _layout.getWidth();
-    } //<>//
+    }
 
     public float getHeight(){
         return _layout.getHeight();
@@ -129,7 +131,7 @@ public class Button extends GuiObject {
         _contentHoverColor = contentHoverColor;
     }
 
-    public void setCallback(String callback){
+    public void setCallback(Callback callback){
         _callback = callback;
     }
 
