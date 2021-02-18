@@ -54,7 +54,7 @@ class Text extends GuiObject {
         _textSize = textSize;
     }
 
-    public void setTextColor(color textColor){
+    public void setColor(color textColor){
         _textColor = textColor;
     }
 

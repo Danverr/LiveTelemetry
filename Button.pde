@@ -80,15 +80,15 @@ public class Button extends GuiObject {
         
         if (isMouseOver && _context.mousePressed){             
             _layout.setBackgroundColor(color(_buttonHoverColor, 128)); // Нажата кнопка мыши над кнопкой
-            if(_text != null) _text.setTextColor(color(_contentHoverColor, 128));
+            if(_text != null) _text.setColor(color(_contentHoverColor, 128));
             if(_icon != null) _icon.setColor(color(_contentHoverColor, 128));
         } else if (isMouseOver) {
             _layout.setBackgroundColor(_buttonHoverColor);             // Курсор сверху кнопки
-            if(_text != null) _text.setTextColor(_contentHoverColor);
+            if(_text != null) _text.setColor(_contentHoverColor);
             if(_icon != null) _icon.setColor(_contentHoverColor); 
         } else {
             _layout.setBackgroundColor(_buttonColor);                  // Обычное состояние
-            if(_text != null) _text.setTextColor(_contentColor);
+            if(_text != null) _text.setColor(_contentColor);
             if(_icon != null) _icon.setColor(color(_contentColor));
         }
 

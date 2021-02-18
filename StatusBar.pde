@@ -12,23 +12,11 @@ class StatusBar {
         int textSize = 14;
         float textVertIndent = (STATUS_BAR_HEIGHT - textSize) / 2;
 
-        final String[] names = {"Запуск", "Калибровка", "Камера", "Порт", "Цвет"};
-        final color[] hoverColors = {DANGER_COLOR, WARNING_COLOR, color(0, 51), color(0, 51), color(0, 51)};
+        final String[] names = {"Запуск", "Калибровка", "Цвет"};
+        final color[] hoverColors = {DANGER_COLOR, WARNING_COLOR, color(0, 51)};
         final Callback[] callbacks = { 
             null, 
-            null,
-            new Callback(){
-                public void execute(){
-                    cameraName = null;         
-                    selectCamera.updateOptions();
-                }
-            }, 
-            new Callback(){
-                public void execute(){
-                    serialPortName = null;
-                    selectSerialPort.updateOptions();  
-                }
-            },
+            null,            
             null
         };
 

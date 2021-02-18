@@ -2,13 +2,25 @@ class Loader {
 
     private PApplet _context;
 
-    private PImage _logo;
+    private PImage _logoGalaktika;
+    private PImage _logoRocket;
     private PImage _spinner;    
 
-    Loader(PApplet context){
+    Loader(PApplet context){        
         _context = context;
-        _logo = loadImage("logo.png");
+        _logoGalaktika = loadImage("galaktikaShadow.png");
+        _logoRocket = loadImage("logo.png");
         _spinner = loadImage("spinner.png");
+    }
+
+    public void drawStatic(){
+        background(0);
+        imageMode(CENTER);
+        int width = _context.width;
+        int height = _context.height;
+        
+        // Логотип GALAKTIKA
+        image(_logoGalaktika, width / 2, height / 2);
     }
 
     public void draw(){
@@ -17,8 +29,8 @@ class Loader {
         int width = _context.width;
         int height = _context.height;
         
-        // Логотип
-        image(_logo, width / 2, height / 2);
+        // Логотип ракета
+        image(_logoRocket, width / 2, height / 2);
 
         // Спиннер
         translate(width / 2, height / 2);

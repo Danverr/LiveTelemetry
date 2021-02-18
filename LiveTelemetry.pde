@@ -33,11 +33,12 @@ StatusBar statusBar;
 LeftSidebar leftSidebar;
 DialogWindow selectSerialPort;
 DialogWindow selectCamera;
+SerialPort serialPort;
 
 boolean showLoader = false;
 boolean cameraReady = false;
 String cameraName;
-String serialPortName;
+String[] stages;
 
 
 
@@ -58,7 +59,6 @@ void setup(){
 
     loader = new Loader(this);
     statusBar = new StatusBar(this);
-    leftSidebar = new LeftSidebar(this);
     
     selectCamera = new DialogWindow(this, "Выберите камеру", new StringArrayCallback(){
         public String[] execute(){
@@ -67,7 +67,7 @@ void setup(){
     });
     selectSerialPort = new DialogWindow(this, "Выберите COM порт", new StringArrayCallback(){
         public String[] execute(){
-            return append(Serial.list(), "Test");
+            return append(Serial.list(), TEST_SERIAL_PORT);
         }
     });
 }
@@ -75,11 +75,15 @@ void setup(){
 void draw(){    
     background(0);
 
-    if(selectSerialPort.available()){
-        serialPortName = selectSerialPort.getResult();
+    if(serialPort == null && selectSerialPort.available()){
+        serialPort = new SerialPort(this, selectSerialPort.getResult());
     }
-    if(selectCamera.available()){
+    if(cameraName == null && selectCamera.available()){
         cameraName = selectCamera.getResult();
+    }
+    if(stages == null && serialPort != null && serialPort.isInitCompleted()){
+        stages = serialPort.getStages();
+        leftSidebar = new LeftSidebar(this);
     }
     
     if(showLoader){
@@ -87,7 +91,7 @@ void draw(){
     } else if(cameraName == null){
         cameraReady = false;
         selectCamera.draw();
-    } else if(serialPortName == null){
+    } else if(serialPort == null){
         selectSerialPort.draw();
     } else if(!cameraReady){
         thread("initCamera");

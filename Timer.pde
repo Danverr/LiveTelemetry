@@ -14,13 +14,13 @@ class Timer extends Layout {
         _missionTime = new Text(_context, getMissionTime());
         _missionTime.setFont(RobotoMono_med);
         _missionTime.setTextSize(36);
-        _missionTime.setTextColor(color(0));
+        _missionTime.setColor(color(0));
         add(_missionTime);
         
         _localTime = new Text(_context, getLocalTime());
         _localTime.setFont(RobotoMono_reg);
         _localTime.setTextSize(18);
-        _localTime.setTextColor(color(0, 128));
+        _localTime.setColor(color(0, 128));
         add(_localTime);
     }
 
