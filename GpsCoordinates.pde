@@ -25,10 +25,17 @@ class GpsCoordinates extends Layout {
     }
 
     public void draw(){
-        JSONArray data = serialPort.getData().getJSONArray("coordinates");
+        Table data = serialPort.getData();
+        TableRow row = data.getRow(data.getRowCount() - 1);
+        
+        String[] keys = {
+            "xCoordinate",
+            "yCoordinate",
+            "zCoordinate",
+        };
 
-        for(int i = 0; i < 3; i++){
-            String coordinate = nf(data.getFloat(i), 3, 10);
+        for(int i = 0 ; i < 3; i++){
+            String coordinate = nf(row.getFloat(keys[i]), 3, 10);
             _coordinates[i].setText(labels[i] + coordinate);
         }
 

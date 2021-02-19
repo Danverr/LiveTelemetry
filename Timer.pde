@@ -1,9 +1,9 @@
 class Timer extends Layout {
-
+    
     private Text _missionTime;
     private Text _localTime;
-
-    private int _startTime = -1;
+    
+    private int _startTime = - 1;
     private int _countdown = 10 * 1000; // 10 секунд обратный отсчет
     
     Timer(PApplet context) {
@@ -23,15 +23,15 @@ class Timer extends Layout {
         _localTime.setColor(color(0, 128));
         add(_localTime);
     }
-
-    protected void update(){
+    
+    protected void update() {
         _missionTime.setText(getMissionTime());
         _localTime.setText(getLocalTime());
         super.update();
     }
-
+    
     public String getMissionTime() {
-        int ms = _startTime != -1 ? millis() - _startTime : -_countdown;
+        int ms = _startTime != - 1 ? millis() - _startTime : - _countdown;
         String T = "T" + (ms < 0 ? "-" : "+");
         ms = abs(ms);
         
@@ -41,18 +41,18 @@ class Timer extends Layout {
         time += nf(ms / 1000, 2) + ":"; // Секунды
         ms %= 1000;    
         time += nf(ms, 3); // Милисекунды
-
+        
         return T + time;
     }
-
+    
     public String getLocalTime() {
         String time = nf(hour(), 2) + ":" + nf(minute(), 2) + ":" + nf(second(), 2);
         String date = nf(day(), 2) + "." + nf(month(), 2) + "." + year();
         return time + " " + date;
     }
-
-    public void setStartTime(){
+    
+    public void setStartTime() {
         _startTime = millis() + _countdown;
     }
-
+    
 }
