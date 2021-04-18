@@ -25,14 +25,14 @@ public class Button extends GuiObject {
         _width = width;
         _height = height;
 
-        int size = 0;
+        int size = 1;
 
-        if(icon != "") {
+        if(icon != null) {
             _icon = new Shape(context, icon);
             size++;            
         }
 
-        if(text != ""){
+        if(text != null){
             _text = new Text(context, text);
             size++;
         }
@@ -46,6 +46,14 @@ public class Button extends GuiObject {
 
         if(_icon != null) _layout.add(_icon);
         if(_text != null) _layout.add(_text);
+    }
+
+    public Button(PApplet context, float width, float height, String text) {
+        this(context, width, height, text, null);
+    }
+
+    public Button(PApplet context, String text) {
+        this(context, -1, -1, text, null);
     }
 
     public Button(PApplet context, String text, String icon) {
@@ -137,6 +145,14 @@ public class Button extends GuiObject {
 
     public void setSpacing(float spacing){
         _layout.setSpacing(spacing);
+    }
+
+    public void setCornerRadius(int r1, int r2, int r3, int r4){
+        _layout.setCornerRadius(r1, r2, r3, r4);
+    }
+
+    public void setCornerRadius(int rad){
+        _layout.setCornerRadius(rad);
     }
 
     public void setPadding(float mainBeg, float mainEnd, float crossLeft, float crossRight){

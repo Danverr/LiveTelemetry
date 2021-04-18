@@ -7,7 +7,7 @@ void captureEvent(Capture video){
 }
 
 void initCamera(){
-    showLoader = true;
+    showLoader++;
 
     while(true){
         try{
@@ -15,7 +15,7 @@ void initCamera(){
             cam.start();
 
             cameraReady = true;
-            showLoader = false;
+            showLoader--;
             return;            
         } catch(Exception e) {
             delay(500);

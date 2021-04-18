@@ -19,12 +19,17 @@ final int FPS = 30;
 
 final color TRANSPARENT = color(0, 1);
 final color DANGER_COLOR = #F36C21;
+final color SUCCESS_COLOR = #60c655;
 final color WARNING_COLOR = #F7BD44;
 
 final float STATUS_BAR_HEIGHT = 24;
 
 final float SIDEBAR_WIDTH = 384;
 final float SIDEBAR_CONTENT_WIDTH = 256;
+
+final float PLOT_WIDTH = 256;
+final float PLOT_HEIGHT = 156;
+final int PLOT_PADDING = 12;
 
 
 
@@ -36,16 +41,23 @@ LeftSidebar leftSidebar;
 RightSidebar rightSidebar;
 DialogWindow selectSerialPort;
 DialogWindow selectCamera;
-
+Snackbar snackbar;
 SerialPort serialPort;
 Timer timer;
 FlightStages flightStages;
 GpsCoordinates gpsCoordinates;
 
-boolean showLoader = false;
+int showLoader = 0;
 boolean cameraReady = false;
 String cameraName;
-String[] stages;
+String[] stages = {
+        "Обратный отсчет",
+        "Активный полет",
+        "Выгорание двигателя",
+        "Апогей",
+        "Раскрытие парашюта",
+        "Приземление"
+    };
 
 
 
@@ -67,6 +79,7 @@ void setup() {
     loader = new Loader(this);
     statusBar = new StatusBar(this);
     rightSidebar = new RightSidebar(this);
+    snackbar = new Snackbar(this);
     
     selectCamera = new DialogWindow(this, "Выберите камеру", new StringArrayCallback() {
         public String[] execute() {
@@ -81,20 +94,17 @@ void setup() {
 }
 
 void draw() {    
-    background(0);
+    background(0);    
     
-    if (serialPort == null && selectSerialPort.available()) {
+    if (serialPort == null && selectSerialPort.available()) {        
         serialPort = new SerialPort(this, selectSerialPort.getResult());
+        leftSidebar = new LeftSidebar(this);
     }
     if (cameraName == null && selectCamera.available()) {
         cameraName = selectCamera.getResult();
     }
-    if (stages == null && serialPort != null && serialPort.isInitCompleted()) {
-        stages = serialPort.getStages();
-        leftSidebar = new LeftSidebar(this);
-    }
     
-    if (showLoader) {
+    if (showLoader != 0) {
         loader.draw();
     } else if (cameraName == null) {
         cameraReady = false;
@@ -104,9 +114,11 @@ void draw() {
     } else if (!cameraReady) {
         thread("initCamera");
     } else {
-        drawCamera();
+        serialPort.update();
+        drawCamera();        
         statusBar.draw();
         leftSidebar.draw();
         rightSidebar.draw();
+        snackbar.draw();
     }
 }

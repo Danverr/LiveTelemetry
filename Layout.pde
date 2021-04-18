@@ -30,6 +30,7 @@ public class Layout extends GuiObject {
     protected int _distribution = PACKED; // При не фиксированном размере может быть только PACKED!
 
     protected color _backgroundColor = color(0, 1);
+    int[] _cornerRadius = new int[4];
 
     PVector _layoutSize;
     PVector _contentSize;
@@ -61,10 +62,15 @@ public class Layout extends GuiObject {
     protected void update(){
         updateSize();
 
-        PVector pos = new PVector(_x, _y);
         PVector mainAxis = getMainAxis(true);
         PVector crossAxis = getCrossAxis();
 
+        // Устанавливаем позицию с нужного нам конца //<>//
+        PVector pos = new PVector(_x, _y);
+        if(_direction == BACKWARD){
+            pos.sub(multByCoords(mainAxis, _layoutSize));
+        }
+        
         // Делаем первый отступ от края по главной оси
         pos.add(mainAxis.copy().mult(_padding[0]));
         
@@ -77,10 +83,17 @@ public class Layout extends GuiObject {
             PVector itemPos = pos.copy();
             
             // Рассчитываем новую позицию с учетом выравнивания
-            if (_align == CENTER){
+            if(_align == LEFT || _align == TOP){
+                itemPos.add(crossAxis.copy().mult(_padding[2]));
+            }else if (_align == CENTER){
                 itemPos.add(multByCoords(_layoutSize.copy().sub(itemSize).div(2), crossAxis));
             } else if (_align == RIGHT || _align == BOTTOM){
                 itemPos.add(multByCoords(_layoutSize.copy().sub(itemSize), crossAxis));
+                itemPos.sub(crossAxis.copy().mult(_padding[3]));
+            }
+
+            if(_direction == BACKWARD){
+                itemPos.add(multByCoords(itemSize, mainAxis));
             }
 
             // Задаем новую позицию
@@ -176,7 +189,10 @@ public class Layout extends GuiObject {
         // Фон
         noStroke();
         fill(_backgroundColor);
-        rect(_x, _y, _layoutSize.x, _layoutSize.y);
+        rect(
+            _x, _y, _layoutSize.x, _layoutSize.y,
+            _cornerRadius[0], _cornerRadius[1], _cornerRadius[2], _cornerRadius[3]
+        );
 
         // Внутренние компоненты
         for(int i = 0; i < _size; i++){
@@ -206,6 +222,17 @@ public class Layout extends GuiObject {
 
     public void setSpacing(float spacing){
         _spacing = spacing;
+    }
+
+    public void setCornerRadius(int r1, int r2, int r3, int r4){
+        _cornerRadius[0] = r1;
+        _cornerRadius[1] = r2;
+        _cornerRadius[2] = r3;
+        _cornerRadius[3] = r4;
+    }
+
+    public void setCornerRadius(int rad){
+        _cornerRadius[0] = _cornerRadius[1] = _cornerRadius[2] = _cornerRadius[3] = rad;
     }
 
     public void setPadding(float mainBeg, float mainEnd, float crossLeft, float crossRight){

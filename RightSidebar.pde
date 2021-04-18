@@ -16,7 +16,7 @@ class RightSidebar {
         // График высоты
         GraphWrapper heightGraph = new GraphWrapper(
             context,
-            SIDEBAR_CONTENT_WIDTH, 156,
+            PLOT_WIDTH, PLOT_HEIGHT,
             "Высота", "м",
             new String[]{ "height" }
         );
@@ -25,7 +25,7 @@ class RightSidebar {
         // График скорости
         GraphWrapper velocityGraph = new GraphWrapper(
             context,
-            SIDEBAR_CONTENT_WIDTH, 156,
+            PLOT_WIDTH, PLOT_HEIGHT,
             "Скорость", "м/c",
             new String[]{ "xVelocity", "yVelocity", "zVelocity" }
         );
@@ -34,7 +34,7 @@ class RightSidebar {
         // График ускорения
         GraphWrapper accelerationGraph = new GraphWrapper(
             context,
-            SIDEBAR_CONTENT_WIDTH, 156,
+            PLOT_WIDTH, PLOT_HEIGHT,
             "Ускорение", "м/c^2",
             new String[]{ "xAcceleration", "yAcceleration", "zAcceleration" }
         );

@@ -25,7 +25,7 @@ class DialogWindow {
 
         // Инициализация кнопки обновления
         if(_callback != null){
-            Button updateBtn = new Button(context, "Обновить", "");
+            Button updateBtn = new Button(context, "Обновить");
             updateBtn.setTextSize(18);          
             updateBtn.setContentColor(color(255, 128));
             updateBtn.setButtonHoverColor(TRANSPARENT);
@@ -54,7 +54,7 @@ class DialogWindow {
         for(int i = 0; i < optionsNames.length; i++) {
             final String name = optionsNames[i];
 
-            Button btn = new Button(context, name, "");
+            Button btn = new Button(context, name);
             btn.setTextSize(24);
             btn.setContentColor(color(255, 192));
             btn.setButtonColor(TRANSPARENT);

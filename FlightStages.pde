@@ -20,8 +20,8 @@ class FlightStages extends Layout {
         }
     }
     
-    private void setStage(int index) {
-        if (index == _activeStage) {
+    public void setStage(int index) {        
+        if (index == _activeStage || index >= _flightStages.length) {
             return;
         }
         

@@ -15,8 +15,20 @@ class StatusBar {
         final String[] names = {"Запуск", "Калибровка"};
         final color[] hoverColors = {DANGER_COLOR, WARNING_COLOR};
         final Callback[] callbacks = { 
-            null, 
-            null
+            new Callback(){
+                void execute(){  
+                    byte[] arr = {1, 0};
+                    snackbar.show("Включаем синий светодиод...");
+                    serialPort.sendRequest(arr);                    
+                }
+            }, 
+            new Callback(){
+                void execute(){
+                    byte[] arr = {1, 1};
+                    snackbar.show("Включаем красный светодиод...");
+                    serialPort.sendRequest(arr);
+                }
+            }
         };
 
         _leftButtons = new Layout(context, names.length);
@@ -28,7 +40,7 @@ class StatusBar {
 
         // Инициализация кнопок слева
         for (int i = 0; i < names.length; i++){
-            Button btn = new Button(context, names[i], "");
+            Button btn = new Button(context, names[i]);
             btn.setCallback(callbacks[i]);
             btn.setPadding(10, textVertIndent);
             btn.setTextSize(textSize);
@@ -40,7 +52,7 @@ class StatusBar {
         }
 
         // Инициализация кнопки выхода
-        Button _exitButton = new Button(context, 34, STATUS_BAR_HEIGHT, "", "exitIcon.svg");
+        Button _exitButton = new Button(context, 34, STATUS_BAR_HEIGHT, null, "exitIcon.svg");
         _exitButton.setButtonColor(TRANSPARENT);
         _exitButton.setButtonHoverColor(DANGER_COLOR);
         _exitButton.setContentColor(color(0, 128));
