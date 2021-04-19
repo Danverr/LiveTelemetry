@@ -5,7 +5,8 @@ final String TEST_SERIAL_PORT = "Тест";
 final byte startMarker = 0x7E;
 final int VAR_SIZE = 2;
 final int VAR_COUNT = 14;
-final int PRECISION = 1000000;
+final int PRECISION = 10;
+final int BAUD_RATE = 115200;
 final int PACKAGE_SIZE = VAR_SIZE * VAR_COUNT;
 
 int currentByte = PACKAGE_SIZE;
@@ -36,6 +37,7 @@ class SerialPort {
     private String _serialPortName;
 
     private int _requestId = 0;
+    private final int _requestIdMod = 30001;
     private final int _responseTimeout = 5000;
     private int _requestSendingTime = 0;
     private int _lastResponseId = -1;
@@ -58,7 +60,8 @@ class SerialPort {
         "xCoordinate",   // 12: Координата GPS по Ox
         "yCoordinate",   // 13: Координата GPS по Oy
         "zCoordinate",   // 14: Координата GPS по Oz
-        "millis",        // 15: millis() по времени наземной станции
+        "millis",        // 15: millis по внутреннему времени
+        "timestamp",     // 16: UNIX Timestamp в мс в виде строки
     };
     private String[] _columnTypes = {
         "int",           
@@ -75,7 +78,8 @@ class SerialPort {
         "float",         
         "float",         
         "float",         
-        "float",         
+        "int",    
+        "String",
     };
 
     
@@ -89,19 +93,16 @@ class SerialPort {
         for (String name : _columnNames) {
             _data.addColumn(name);
         }
-
-        initTable();
         
         if (serialPortName != TEST_SERIAL_PORT) {
-            _serial = new Serial(_context, serialPortName, 115200);
+            _serial = new Serial(_context, serialPortName, BAUD_RATE);
         }        
     }
     
     
     
     public void serialEvent() {
-        TableRow newRow = _data.addRow(_data.getRow(_data.getRowCount() - 1)); 
-        newRow.setInt("millis", millis());
+        TableRow newRow = getNewRow(); 
 
         for(int i = 0, j = 0; j < PACKAGE_SIZE; i++, j += VAR_SIZE){
             if(_columnTypes[i] == "int"){
@@ -143,13 +144,18 @@ class SerialPort {
 
 
     private void repeatRequest(){
+        if(_serial == null){ 
+            return; 
+        }
+
         _serial.write(startMarker);
         _serial.write(_requestId);
         _serial.write(_currentRequest);
     }
 
-    public void sendRequest(byte[] arr) {
-        ++_requestId;
+    public void sendRequest(byte[] arr) {        
+        _requestId = (_requestId + 1) % _requestIdMod;
+
         println("Request #" + _requestId + " has been sent!");        
 
         _currentRequest = arr;
@@ -161,40 +167,40 @@ class SerialPort {
     
     
 
-    private void initTable(){
-        int millis = millis();
-
-        for (int j = 5000; j >= 0; j--) {
-            TableRow newRow = _data.addRow();
-            
-            for (int i = 0; i < _columnNames.length; i++) {
-                String name = _columnNames[i];
-                    
-                if(_columnTypes[i] == "int"){
-                    newRow.setInt(name, 0);
-                } else if(_columnTypes[i] == "float") {
-                    newRow.setFloat(name, 0);
-                }
-            }
-
-            newRow.setInt("millis", millis - j);
-            newRow.setInt("stage", -1);
-        }        
-    }
-
-
-
-    private void addRandomRow(){
-        TableRow lastRow = _data.getRow(_data.getRowCount() - 1);
+    private TableRow getNewRow(){
         TableRow newRow = _data.addRow();
         
         for (int i = 0; i < _columnNames.length; i++) {
             String name = _columnNames[i];
-            
-            if (name == "millis") {
-                newRow.setInt(name, millis());
-            } else if (name == "stage") {
-                newRow.setInt(name, -1);
+                
+            if(_columnTypes[i] == "int"){
+                newRow.setInt(name, 0);
+            } else if(_columnTypes[i] == "float") {
+                newRow.setFloat(name, 0);
+            }
+        }
+
+        newRow.setInt("millis", millis());
+        newRow.setString("timestamp", String.valueOf(System.currentTimeMillis()));
+        newRow.setInt("stage", -1);    
+        return newRow; 
+    }
+
+
+
+    private void addRandomRow(){        
+        if(_data.getRowCount() == 0){
+            getNewRow();
+        }
+
+        TableRow lastRow = _data.getRow(_data.getRowCount() - 1);
+        TableRow newRow = getNewRow();
+        
+        for (int i = 0; i < VAR_COUNT; i++) {
+            String name = _columnNames[i];
+                      
+            if(_columnTypes[i] == "int"){
+                newRow.setInt(name, 0);
             } else {
                 float val = lastRow.getFloat(name);
                 val += random(-1, 1);
@@ -202,7 +208,13 @@ class SerialPort {
                 val = max(val, 0);
                 newRow.setFloat(name, val);
             }
-        }      
+        }
+
+        newRow.setInt("stage", (millis() / 1000) % stages.length);
+
+        if(flightStages != null){
+            flightStages.setStage(newRow.getInt("stage"));
+        }
     }
 
     
@@ -212,10 +224,20 @@ class SerialPort {
             if(millis() - _requestSendingTime < _responseTimeout){
                 repeatRequest();
             } else{
+                println("Request #" + _requestId + " exceeded time limit"); 
                 snackbar.show("Превышено время ожидания", ERROR_SNACKBAR);
                 _isWaitingForResponse = false; 
             }            
         }
+    }
+
+
+
+    public void saveData(){
+        String path = "./telemetry/" + getLocalTimeForFile() + ".csv";
+        saveTable(_data, path);
+        println("Telemetry has been successfully saved at " + path);
+        snackbar.show("Данные сохранены в \"" + path + "\"", SUCCESS_SNACKBAR);
     }
 
   

@@ -12,21 +12,38 @@ class StatusBar {
         int textSize = 14;
         float textVertIndent = (STATUS_BAR_HEIGHT - textSize) / 2;
 
-        final String[] names = {"Запуск", "Калибровка"};
-        final color[] hoverColors = {DANGER_COLOR, WARNING_COLOR};
+        final String[] names = {
+            "Запуск",
+            "Калибровка", 
+            "Сохранить данные"
+        };
+
+        final color[] hoverColors = {
+            color(DANGER_COLOR, 192), 
+            color(WARNING_COLOR, 192), 
+            color(0, 38),
+        };
+        
         final Callback[] callbacks = { 
             new Callback(){
-                void execute(){  
-                    byte[] arr = {1, 0};
+                void execute(){ 
                     snackbar.show("Включаем синий светодиод...");
+                    timer.start();
+                    byte[] arr = {1, 0};
                     serialPort.sendRequest(arr);                    
                 }
             }, 
             new Callback(){
                 void execute(){
-                    byte[] arr = {1, 1};
                     snackbar.show("Включаем красный светодиод...");
+                    timer.reset();
+                    byte[] arr = {1, 1};
                     serialPort.sendRequest(arr);
+                }
+            },
+            new Callback(){
+                void execute(){
+                    serialPort.saveData();
                 }
             }
         };

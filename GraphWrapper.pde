@@ -38,7 +38,7 @@ class GraphWrapper extends GuiObject {
         _graph.xLabel = "";
         _graph.yLabel = "";
         _graph.Title = _title;
-        _graph.xDiv = 5;
+        _graph.xDiv = _timeout / 1000;
     }
     
     
@@ -76,40 +76,11 @@ class GraphWrapper extends GuiObject {
                 _yMin = min(_yMin, yData[i][j]);
                 _yMax = max(_yMax, yData[i][j]);
             }
-        }
-        
-        _xMin = xData[0];
-        _xMax = xData[_pointsCount - 1];
+        }        
         
         _xData = xData;
         _yData = yData;
     }
-
-    /*void updateData() {
-        Table data = serialPort.getData();        
-        int rowCount = data.getRowCount();
-        int count = min(rowCount, 500);
-        int start = rowCount - count;
-        float[] xData = new float[count];
-        float[][] yData = new float[_dataKeys.length][xData.length];
-        
-        for (int j = 0; j < count; j++) {
-            TableRow row = data.getRow(start + j);            
-            
-            xData[j] = row.getInt("millis");
-            _xMin = min(_xMin, xData[j]);
-            _xMax = max(_xMax, xData[j]);
-            
-            for (int i = 0; i < _dataKeys.length; i++) {
-                yData[i][j] = row.getFloat(_dataKeys[i]);
-                _yMin = min(_yMin, yData[i][j]);
-                _yMax = max(_yMax, yData[i][j]);
-            }
-        }
-        
-        _xData = xData;
-        _yData = yData;
-    }*/
 
 
 
@@ -140,11 +111,9 @@ class GraphWrapper extends GuiObject {
         updateData();
         updateTitle();
 
-        float padding = (_yMax - _yMin) * 0.1;
+        float padding = max(1, (_yMax - _yMin) * 0.1);
         _graph.yMin = _yMin - padding;
         _graph.yMax = _yMax + padding;
-        _graph.xMin = _xMin / 1000;
-        _graph.xMax = _xMax / 1000;
         _graph.drawAxis();
         
         for (int i = 0; i < _yData.length; i++) {         

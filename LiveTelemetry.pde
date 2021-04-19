@@ -70,6 +70,7 @@ void settings() {
 void setup() {
     background(0);
     frameRate(FPS);
+    prepareExitHandler();
     
     RobotoMono_med = createFont("RobotoMono-Medium.ttf", 24, true);
     RobotoMono_reg = createFont("RobotoMono-Regular.ttf", 24, true);
@@ -93,7 +94,7 @@ void setup() {
     } );
 }
 
-void draw() {    
+void draw() {
     background(0);    
     
     if (serialPort == null && selectSerialPort.available()) {        

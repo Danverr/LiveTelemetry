@@ -92,7 +92,7 @@ class Graph extends GuiObject {
         line(xPos - 3,yPos + Height,xPos + Width + 5,yPos + Height); // x-axis line 
         
         stroke(red(StrokeColor) / 2, green(StrokeColor) / 2, blue(StrokeColor) / 2);
-        if (yMin < 0) {
+        if (yMin <= 0 && 0 <= yMax) {
             line(
                 xPos - 7,                                       // zero line 
                 yPos + Height - (abs(yMin) / (yMax - yMin)) * Height, 
@@ -120,8 +120,10 @@ class Graph extends GuiObject {
             textSize(12); // x-axis Labels
             String xAxis = str(xMin + float(x) / xDiv * (xMax - xMin));  // the only way to get a specific number of decimals 
             String[] xAxisMS = split(xAxis,'.');                         // is to split the float into strings 
+
             text(
-                xAxisMS[0] + "." + xAxisMS[1].charAt(0),              // ...
+                //xAxisMS[0] + "." + xAxisMS[1].charAt(0),              // ...
+                (second() - (xDiv - x) + 60) % 60,
                 float(x) / xDiv * Width + xPos - 3,yPos + Height + 15 // x-axis Labels
                );
         }

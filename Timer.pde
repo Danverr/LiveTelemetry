@@ -45,14 +45,12 @@ class Timer extends Layout {
         return T + time;
     }
     
-    public String getLocalTime() {
-        String time = nf(hour(), 2) + ":" + nf(minute(), 2) + ":" + nf(second(), 2);
-        String date = nf(day(), 2) + "." + nf(month(), 2) + "." + year();
-        return time + " " + date;
-    }
-    
-    public void setStartTime() {
+    public void start() {
         _startTime = millis() + _countdown;
+    }
+
+    public void reset() {
+        _startTime = -1;
     }
     
 }
