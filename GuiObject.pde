@@ -10,6 +10,19 @@ abstract class GuiObject {
 
     protected int _lastFrameCount = -1;
     protected boolean _isVisible = true;
+    
+    GuiObject(){
+    }
+
+    GuiObject(PApplet context){
+        this(context, -1, -1);
+    }
+
+    GuiObject(PApplet context, float width, float height){
+        _context = context;
+        _width = width;
+        _height = height;
+    }
 
     public void draw() {        
         _lastFrameCount = _context.frameCount;

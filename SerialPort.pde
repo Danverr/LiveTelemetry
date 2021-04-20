@@ -4,7 +4,7 @@ final String TEST_SERIAL_PORT = "Тест";
 
 final byte startMarker = 0x7E;
 final int VAR_SIZE = 2;
-final int VAR_COUNT = 14;
+final int VAR_COUNT = 17;
 final int PRECISION = 10;
 final int BAUD_RATE = 115200;
 final int PACKAGE_SIZE = VAR_SIZE * VAR_COUNT;
@@ -63,14 +63,20 @@ class SerialPort {
         "xCoordinate",   // 12: Координата GPS по Ox
         "yCoordinate",   // 13: Координата GPS по Oy
         "zCoordinate",   // 14: Координата GPS по Oz
-        "millis",        // 15: millis по внутреннему времени
-        "timestamp",     // 16: UNIX Timestamp в мс в виде строки
+        "yaw",           // 15: Рыскание в градусах
+        "pitch",         // 16: Тангаж в градусах
+        "roll",          // 17: Крен в градусах
+        "millis",        // 18: millis по внутреннему времени
+        "timestamp",     // 19: UNIX Timestamp в мс в виде строки
     };
     private String[] _columnTypes = {
         "int",
         "int",
         "int",
         "int",
+        "float",
+        "float",
+        "float",
         "float",
         "float",
         "float",
@@ -212,20 +218,25 @@ class SerialPort {
         for (int i = 0; i < VAR_COUNT; i++) {
             String name = _columnNames[i];
                       
-            if(_columnTypes[i] == "float") {
+            if(_columnTypes[i] == "int") {
+                int val = 0;
+                for(int j = 0; j < VAR_SIZE; j++) {
+                    buffer[2*i + j] = byte(val >> (8 * j));
+                }
+            }else if(_columnTypes[i] == "float"){
                 float val = lastRow.getFloat(name);
                 val += random(-1, 1);
                 val = min(val, 3000);
                 val = max(val,-3000);
+
+                if(name == "yaw" || name == "pitch" || name == "roll"){
+                    val = (val + 360) % 360; //<>//
+                }
                 
                 for(int j = 0; j < VAR_SIZE; j++) {
                     buffer[2*i + j] = byte(int(val * PRECISION) >> (8 * j));
                 }
-            }else{
-                for(int j = 0; j < VAR_SIZE; j++) {
-                    buffer[2*i + j] = 0;
-                }
-            }     
+            }
         }
 
         int stage = (millis() / 1000) % stages.length;
@@ -288,6 +299,11 @@ class SerialPort {
         }
         
         return _data;
+    }
+
+    public TableRow getLastRow() {
+        Table data = getData();
+        return data.getRow(data.getRowCount() - 1);
     }
 
     public Serial getSerial(){

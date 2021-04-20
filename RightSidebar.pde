@@ -3,6 +3,9 @@ class RightSidebar {
     private PApplet _context;
     
     Layout _layout;
+
+    Layout _indicators;
+    RollIndicator _rollIndicator;
     
     RightSidebar(PApplet context) {
         _context = context;
@@ -12,6 +15,15 @@ class RightSidebar {
         _layout.setBackgroundColor(color(255, 255 * 0.2));
         _layout.setDistribution(SPACE_EVENLY);
         _layout.moveTo(context.width - SIDEBAR_WIDTH, STATUS_BAR_HEIGHT);
+
+        // Индикаторы отклонения и вращения       
+        _indicators = new Layout(context, SIDEBAR_CONTENT_WIDTH, AUTO, 1);
+        _indicators.setDistribution(SPACE_BETWEEN);
+        
+        _rollIndicator = new RollIndicator(context);
+        _indicators.add(_rollIndicator);
+
+        _layout.add(_indicators);
         
         // График высоты
         GraphWrapper heightGraph = new GraphWrapper(

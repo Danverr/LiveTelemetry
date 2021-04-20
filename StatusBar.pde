@@ -10,7 +10,6 @@ class StatusBar {
 
         // Параметры
         int textSize = 14;
-        float textVertIndent = (STATUS_BAR_HEIGHT - textSize) / 2;
 
         final String[] names = {
             "Запуск",
@@ -64,9 +63,9 @@ class StatusBar {
 
         // Инициализация кнопок слева
         for (int i = 0; i < names.length; i++){
-            Button btn = new Button(context, names[i]);
+            Button btn = new Button(context, AUTO, STATUS_BAR_HEIGHT, names[i]);
             btn.setCallback(callbacks[i]);
-            btn.setPadding(10, textVertIndent);
+            btn.setPadding(10, 0);
             btn.setTextSize(textSize);
             btn.setButtonColor(TRANSPARENT);
             btn.setButtonHoverColor(hoverColors[i]);
@@ -76,7 +75,8 @@ class StatusBar {
         }
 
         // Инициализация кнопки выхода
-        Button _exitButton = new Button(context, 34, STATUS_BAR_HEIGHT, null, "exitIcon.svg");
+        Button _exitButton = new Button(context, AUTO, STATUS_BAR_HEIGHT, null, "exitIcon.svg");
+        _exitButton.setPadding(10, 0);
         _exitButton.setButtonColor(TRANSPARENT);
         _exitButton.setButtonHoverColor(DANGER_COLOR);
         _exitButton.setContentColor(color(0, 128));

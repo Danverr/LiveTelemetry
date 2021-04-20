@@ -37,13 +37,7 @@ public class Button extends GuiObject {
             size++;
         }
         
-        if(_width != -1 && _height != -1){
-            _layout = new Layout(context, width, height, size);
-            _layout.setDistribution(SPACE_EVENLY);
-        }else{
-            _layout = new Layout(context, size);
-        }
-
+        _layout = new Layout(context, width, height, size);
         if(_icon != null) _layout.add(_icon);
         if(_text != null) _layout.add(_text);
     }

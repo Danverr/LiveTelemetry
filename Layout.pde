@@ -1,3 +1,5 @@
+final int AUTO = -1;
+
 final int HORIZONTAL = 0; 
 final int VERTICAL = 1;
 
@@ -34,7 +36,6 @@ public class Layout extends GuiObject {
 
     PVector _layoutSize;
     PVector _contentSize;
-    protected boolean _fixedSize = false;
 
 
 
@@ -44,22 +45,19 @@ public class Layout extends GuiObject {
     }
     
     Layout(PApplet context, int size){
-        _context = context; 
-        _layout = new GuiObject[size];
+        this(context, AUTO, AUTO, size);        
     }
 
     Layout(PApplet context, float width, float height, int size){
-        this(context, size);     
-        _width = width;
-        _height = height;
-        _fixedSize = true;
+        super(context, width, height);
+        _layout = new GuiObject[size];
     }
 
 
 
-    //==========   PROTECTED МЕТОДЫ   ==========// 
+    //==========   PRIVATE МЕТОДЫ   ==========// 
 
-    protected void update(){
+    private void update(){
         updateSize();
 
         PVector mainAxis = getMainAxis(true);
@@ -104,20 +102,21 @@ public class Layout extends GuiObject {
         }
     }
 
-    protected void updateSize() {
+    private void updateSize() {
         _contentSize = getContentSize();
         _layoutSize = getLayoutSize();
     }
 
-    protected PVector getLayoutSize(){ // Вызывать только с актуальным _contentSize!!!
+    private PVector getLayoutSize(){ // Вызывать только с актуальным _contentSize!!!
         PVector mainAxis = getMainAxis(false);
         PVector crossAxis = getCrossAxis();
-        PVector layoutSize = new PVector(0, 0);
+        PVector layoutSize = new PVector(_width, _height);            
 
-        if(_fixedSize) {
-            // Если размеры уже заданы, обновляем растояния между объектами
-            layoutSize = new PVector(_width, _height);
-            
+        if(_width == AUTO) layoutSize.x = _contentSize.x;
+        if(_height == AUTO) layoutSize.y = _contentSize.y;
+
+        if(isMainAxisSizeFixed()) {
+            // Если размеры уже заданы, обновляем растояния между объектами            
             float freeSpace = multByCoords(layoutSize, mainAxis).mag();
             freeSpace -= multByCoords(_contentSize, mainAxis).mag();
             freeSpace -= _padding[0] + _padding[1];
@@ -128,10 +127,9 @@ public class Layout extends GuiObject {
             } else if (_distribution == SPACE_EVENLY){
                 _spacing = freeSpace / (_size + 1);         
             }            
-        }else if(_distribution == PACKED && _size != 0) { 
+        }else if(_distribution == PACKED) { 
             // Если размеры не заданы и внутри Layout что-то есть,
             // посчитаем размер исходя из отступов и размера контента
-            layoutSize = _contentSize.copy();
             layoutSize.add(mainAxis.copy().mult(_padding[0] + _padding[1] + (_size - 1) * _spacing));
             layoutSize.add(crossAxis.copy().mult(_padding[2] + _padding[3]));
         }
@@ -139,7 +137,7 @@ public class Layout extends GuiObject {
         return layoutSize;
     }
 
-    protected PVector getContentSize(){
+    private PVector getContentSize(){
         PVector mainAxis = getMainAxis(false);
         PVector crossAxis = getCrossAxis();
         PVector contentSize = new PVector(0, 0);
@@ -162,11 +160,6 @@ public class Layout extends GuiObject {
         return contentSize;
     }
 
-    protected boolean isMouseOver(){
-        updateSize();
-        return mouseX >= _x && mouseX <= _x + _layoutSize.x && mouseY >= _y && mouseY <= _y + + _layoutSize.y;
-    }
-
     protected PVector getMainAxis(boolean withDirection) {        
         float dir = (_direction == FORWARD) ? 1 : -1; 
         PVector res = new PVector(int(_orientation == HORIZONTAL), int(_orientation == VERTICAL));
@@ -176,6 +169,24 @@ public class Layout extends GuiObject {
 
     protected PVector getCrossAxis() {
         return new PVector(int(_orientation == VERTICAL), int(_orientation == HORIZONTAL));
+    }
+
+    protected boolean isMainAxisSizeFixed(){
+        if(_orientation == HORIZONTAL){
+            return _width != AUTO;
+        }else if(_orientation == VERTICAL){
+            return _height != AUTO;
+        }
+
+        return false;
+    }
+
+
+    //==========   PROTECTED МЕТОДЫ   ==========// 
+
+    protected boolean isMouseOver(){
+        updateSize();
+        return mouseX >= _x && mouseX <= _x + _layoutSize.x && mouseY >= _y && mouseY <= _y + + _layoutSize.y;
     }
 
 
@@ -280,7 +291,7 @@ public class Layout extends GuiObject {
     public void setDistribution(int distribution){
         if(distribution != PACKED && distribution != SPACE_BETWEEN && distribution != SPACE_EVENLY) {
             throw new Error("Align type can only be PACKED, SPACE_BETWEEN or SPACE_EVENLY");
-        } else if (!_fixedSize && distribution != PACKED) {
+        } else if (!isMainAxisSizeFixed() && distribution != PACKED) {
             throw new Error("Align type of Layout with non-fixed size can only be PACKED");
         }
 
