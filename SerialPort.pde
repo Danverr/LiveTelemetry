@@ -33,6 +33,9 @@ class SerialPort {
     
     private PApplet _context;
     
+    PrintWriter _file;
+    String _folder = "./telemetry/";
+    
     private Serial _serial;
     private String _serialPortName;
 
@@ -64,21 +67,21 @@ class SerialPort {
         "timestamp",     // 16: UNIX Timestamp в мс в виде строки
     };
     private String[] _columnTypes = {
-        "int",           
-        "int",           
-        "int", 
-        "int",           
-        "float",         
-        "float",         
-        "float",         
-        "float",         
-        "float",         
-        "float",         
-        "float",         
-        "float",         
-        "float",         
-        "float",         
-        "int",    
+        "int",
+        "int",
+        "int",
+        "int",
+        "float",
+        "float",
+        "float",
+        "float",
+        "float",
+        "float",
+        "float",
+        "float",
+        "float",
+        "float",
+        "int",
         "String",
     };
 
@@ -88,7 +91,16 @@ class SerialPort {
         _context = context;
         _serialPortName = serialPortName;
         
-        _data = new Table();        
+        _data = new Table();       
+        
+        _folder += "Session from " + getLocalTimeForFile() + "/";
+        String path = _folder + getLocalTimeForFile() + " Autolog" + ".csv";
+        _file = createWriter(path);
+        println("Starting to write in a file \"" + path + "\"");
+        
+        for(int i = 0; i < _columnNames.length; i++){
+            _file.print(_columnNames[i] + (i + 1 < _columnNames.length ? "," : "\n"));
+        }        
         
         for (String name : _columnNames) {
             _data.addColumn(name);
@@ -140,6 +152,8 @@ class SerialPort {
 
             _isWaitingForResponse = false;
         }
+
+        saveRow(newRow);
     }
 
 
@@ -188,33 +202,35 @@ class SerialPort {
 
 
 
-    private void addRandomRow(){        
+    private void generateBuffer(){
         if(_data.getRowCount() == 0){
             getNewRow();
         }
 
         TableRow lastRow = _data.getRow(_data.getRowCount() - 1);
-        TableRow newRow = getNewRow();
         
         for (int i = 0; i < VAR_COUNT; i++) {
             String name = _columnNames[i];
                       
-            if(_columnTypes[i] == "int"){
-                newRow.setInt(name, 0);
-            } else {
+            if(_columnTypes[i] == "float") {
                 float val = lastRow.getFloat(name);
                 val += random(-1, 1);
-                val = min(val, 100);
-                val = max(val, 0);
-                newRow.setFloat(name, val);
-            }
+                val = min(val, 3000);
+                val = max(val,-3000);
+                
+                for(int j = 0; j < VAR_SIZE; j++) {
+                    buffer[2*i + j] = byte(int(val * PRECISION) >> (8 * j));
+                }
+            }else{
+                for(int j = 0; j < VAR_SIZE; j++) {
+                    buffer[2*i + j] = 0;
+                }
+            }     
         }
 
-        newRow.setInt("stage", (millis() / 1000) % stages.length);
-
-        if(flightStages != null){
-            flightStages.setStage(newRow.getInt("stage"));
-        }
+        int stage = (millis() / 1000) % stages.length;
+        buffer[3*2 + 0] = byte(stage);
+        buffer[3*2 + 1] = byte(stage >> 8);
     }
 
     
@@ -233,10 +249,33 @@ class SerialPort {
 
 
 
-    public void saveData(){
-        String path = "./telemetry/" + getLocalTimeForFile() + ".csv";
+    private void saveRow(TableRow lastRow){
+        for(int i = 0; i < _columnNames.length; i++){            
+            if(_columnTypes[i] == "int"){
+                _file.print(lastRow.getInt(_columnNames[i]));
+            } else if(_columnTypes[i] == "String"){
+                _file.print(lastRow.getString(_columnNames[i]));
+            } else {
+                _file.print(lastRow.getFloat(_columnNames[i]));
+            }
+
+            _file.print(i + 1 < _columnNames.length ? "," : "\n");
+        }
+    }
+
+
+
+    public void closeFile(){
+        _file.flush(); // Writes the remaining data to the file
+        _file.close(); // Finishes the file
+    }
+
+
+
+    public void saveData(String name){
+        String path = _folder + getLocalTimeForFile() + " " + name + ".csv";
         saveTable(_data, path);
-        println("Telemetry has been successfully saved at " + path);
+        println("Telemetry has been successfully saved at \"" + path + "\"");
         snackbar.show("Данные сохранены в \"" + path + "\"", SUCCESS_SNACKBAR);
     }
 
@@ -244,7 +283,8 @@ class SerialPort {
 
     public Table getData() {
         if (_serialPortName == TEST_SERIAL_PORT) {
-            addRandomRow();            
+            generateBuffer();
+            serialEvent();
         }
         
         return _data;

@@ -15,12 +15,14 @@ class StatusBar {
         final String[] names = {
             "Запуск",
             "Калибровка", 
-            "Сохранить данные"
+            "Сохранить данные", 
+            "THROW EXCEPTION",
         };
 
         final color[] hoverColors = {
             color(DANGER_COLOR, 192), 
             color(WARNING_COLOR, 192), 
+            color(0, 38),
             color(0, 38),
         };
         
@@ -43,7 +45,12 @@ class StatusBar {
             },
             new Callback(){
                 void execute(){
-                    serialPort.saveData();
+                    serialPort.saveData("Manual save");
+                }
+            },
+            new Callback(){
+                void execute(){
+                    throw new RuntimeException("Test runtime exception");
                 }
             }
         };

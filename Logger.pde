@@ -12,9 +12,10 @@ void logException(Exception e){
 
 void prepareExitHandler () {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-        public void run () {
+        public void run () {            
             if(serialPort != null){
-                serialPort.saveData();
+                serialPort.closeFile();
+                serialPort.saveData("Autosave on exit");
             }
         }
     }));

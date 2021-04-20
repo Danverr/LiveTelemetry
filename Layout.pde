@@ -65,7 +65,7 @@ public class Layout extends GuiObject {
         PVector mainAxis = getMainAxis(true);
         PVector crossAxis = getCrossAxis();
 
-        // Устанавливаем позицию с нужного нам конца //<>//
+        // Устанавливаем позицию с нужного нам конца
         PVector pos = new PVector(_x, _y);
         if(_direction == BACKWARD){
             pos.sub(multByCoords(mainAxis, _layoutSize));
