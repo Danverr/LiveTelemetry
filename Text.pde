@@ -4,7 +4,7 @@ class Text extends GuiObject {
 
     protected String _text = "";
     protected float _textSize = 24;
-    protected color _textColor = color(255);
+    protected color _textColor = color(0);
     protected PFont _font = Roboto_reg;
 
 

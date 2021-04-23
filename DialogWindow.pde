@@ -42,6 +42,7 @@ class DialogWindow {
         Text title = new Text(context, titleName);
         title.setTextSize(36);
         title.setFont(Roboto_med);
+        title.setColor(color(255));
         titleLayout.add(title);
 
         // Инициализация контейнера кнопок опций

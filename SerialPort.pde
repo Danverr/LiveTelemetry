@@ -4,7 +4,7 @@ final String TEST_SERIAL_PORT = "Тест";
 
 final byte startMarker = 0x7E;
 final int VAR_SIZE = 2;
-final int VAR_COUNT = 17;
+final int VAR_COUNT = 20;
 final int PRECISION = 10;
 final int BAUD_RATE = 115200;
 final int PACKAGE_SIZE = VAR_SIZE * VAR_COUNT;
@@ -66,8 +66,11 @@ class SerialPort {
         "yaw",           // 15: Рыскание в градусах
         "pitch",         // 16: Тангаж в градусах
         "roll",          // 17: Крен в градусах
-        "millis",        // 18: millis по внутреннему времени
-        "timestamp",     // 19: UNIX Timestamp в мс в виде строки
+        "yawSpeed",      // 18: Скорость рыскания в градусах в секунду
+        "pitchSpeed",    // 19: Скорость тангажа в градусах в секунду
+        "rollSpeed",     // 20: Скорость крена в градусах в секунду
+        "millis",        // 21: millis по внутреннему времени
+        "timestamp",     // 22: UNIX Timestamp в мс в виде строки
     };
     private String[] _columnTypes = {
         "int",
@@ -75,18 +78,11 @@ class SerialPort {
         "int",
         "int",
         "float",
-        "float",
-        "float",
-        "float",
-        "float",
-        "float",
-        "float",
-        "float",
-        "float",
-        "float",
-        "float",
-        "float",
-        "float",
+        "float", "float", "float", // Скорость
+        "float", "float", "float", // Ускорение
+        "float", "float", "float", // GPS
+        "float", "float", "float", // Углы Эйлера
+        "float", "float", "float", // Угловые скорости
         "int",
         "String",
     };
@@ -202,7 +198,7 @@ class SerialPort {
 
         newRow.setInt("millis", millis());
         newRow.setString("timestamp", String.valueOf(System.currentTimeMillis()));
-        newRow.setInt("stage", -1);    
+        newRow.setInt("stage", -1);
         return newRow; 
     }
 
@@ -224,15 +220,15 @@ class SerialPort {
                     buffer[2*i + j] = byte(val >> (8 * j));
                 }
             }else if(_columnTypes[i] == "float"){
-                float val = lastRow.getFloat(name);
+                float val = lastRow.getFloat(name);                
                 val += random(-1, 1);
                 val = min(val, 3000);
                 val = max(val,-3000);
 
                 if(name == "yaw" || name == "pitch" || name == "roll"){
-                    val = (val + 360) % 360; //<>//
+                    val = val % 180;
                 }
-                
+
                 for(int j = 0; j < VAR_SIZE; j++) {
                     buffer[2*i + j] = byte(int(val * PRECISION) >> (8 * j));
                 }

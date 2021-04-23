@@ -6,6 +6,7 @@ class RightSidebar {
 
     Layout _indicators;
     RollIndicator _rollIndicator;
+    DeviationIndicator _deviationIndicator;
     
     RightSidebar(PApplet context) {
         _context = context;
@@ -17,8 +18,11 @@ class RightSidebar {
         _layout.moveTo(context.width - SIDEBAR_WIDTH, STATUS_BAR_HEIGHT);
 
         // Индикаторы отклонения и вращения       
-        _indicators = new Layout(context, SIDEBAR_CONTENT_WIDTH, AUTO, 1);
+        _indicators = new Layout(context, SIDEBAR_CONTENT_WIDTH, AUTO, 2);
         _indicators.setDistribution(SPACE_BETWEEN);
+
+        _deviationIndicator = new DeviationIndicator(context);
+        _indicators.add(_deviationIndicator);
         
         _rollIndicator = new RollIndicator(context);
         _indicators.add(_rollIndicator);

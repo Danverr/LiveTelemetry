@@ -17,6 +17,10 @@ PFont Roboto_reg;
 
 final int FPS = 30;
 
+final color RED = color(192, 0, 0, 200);
+final color GREEN = color(0, 192, 0, 200);
+final color BLUE = color(0, 0, 192, 200);
+
 final color TRANSPARENT = color(0, 1);
 final color DANGER_COLOR = #F36C21;
 final color SUCCESS_COLOR = #60c655;
@@ -64,12 +68,14 @@ String[] stages = {
 //==========   ОСНОВНОЙ КОД   ==========//
 
 void settings() {
-    fullScreen();    
+    fullScreen(P3D);
 }
 
 void setup() {
     background(0);
     frameRate(FPS);
+    ortho();
+
     prepareExitHandler();
     
     RobotoMono_med = createFont("RobotoMono-Medium.ttf", 24, true);
@@ -95,8 +101,8 @@ void setup() {
 }
 
 void draw() {
-    background(0);    
-    
+    background(0);
+
     if (serialPort == null && selectSerialPort.available()) {        
         serialPort = new SerialPort(this, selectSerialPort.getResult());
         leftSidebar = new LeftSidebar(this);
@@ -116,10 +122,11 @@ void draw() {
         thread("initCamera");
     } else {
         serialPort.update();
-        drawCamera();        
+        drawCamera();
+        
         statusBar.draw();
         leftSidebar.draw();
+        snackbar.draw();        
         rightSidebar.draw();
-        snackbar.draw();
     }
 }

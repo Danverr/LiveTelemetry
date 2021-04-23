@@ -13,11 +13,8 @@ class GraphWrapper extends GuiObject {
     private float[][] _yData;
     TableRow row = null;
 
-    private color[] _axisColors = {
-        color(192, 96, 96, 128), // X = R
-        color(96, 192, 96, 128), // Y = G
-        color(96, 96, 192, 128)  // Z = B
-    };
+    // RGB = XYZ
+    private color[] _axisColors = { RED, GREEN, BLUE };
 
     private float _yMin =  10000000;
     private float _yMax = -10000000;

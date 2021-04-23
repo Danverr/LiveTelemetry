@@ -198,12 +198,14 @@ public class Layout extends GuiObject {
         update();
 
         // Фон
-        noStroke();
-        fill(_backgroundColor);
-        rect(
-            _x, _y, _layoutSize.x, _layoutSize.y,
-            _cornerRadius[0], _cornerRadius[1], _cornerRadius[2], _cornerRadius[3]
-        );
+        if(_backgroundColor != TRANSPARENT){
+            noStroke();
+            fill(_backgroundColor);
+            rect(
+                _x, _y, _layoutSize.x, _layoutSize.y,
+                _cornerRadius[0], _cornerRadius[1], _cornerRadius[2], _cornerRadius[3]
+            );            
+        }
 
         // Внутренние компоненты
         for(int i = 0; i < _size; i++){
