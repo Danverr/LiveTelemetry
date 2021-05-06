@@ -1,7 +1,7 @@
 class GpsCoordinates extends Layout {
 
     Text[] _coordinates;
-    final String[] _labels = {"X: ", "Y: ", "Z: "};
+    final String[] _labels = {"LAT: ", "LON: ", "ALT: "};
     String[] _keys = {
             "xCoordinate",
             "yCoordinate",
@@ -31,8 +31,7 @@ class GpsCoordinates extends Layout {
     }
 
     public void draw(){
-        Table data = serialPort.getData();
-        TableRow row = data.getRow(data.getRowCount() - 1);
+        TableRow row = serialPort.getLastRow();
 
         for(int i = 0 ; i < 3; i++){
             String coordinate = nf(row.getFloat(_keys[i]), 0, 10);

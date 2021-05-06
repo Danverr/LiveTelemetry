@@ -46,6 +46,8 @@ class GraphWrapper extends GuiObject {
         int minTime = time - _timeout + 1;
         int rowCount = data.getRowCount();
         int rowIndex = rowCount - 1;
+        _yMin =  10000000;
+        _yMax = -10000000;
 
         float[] xData = new float[_pointsCount];
         float[][] yData = new float[_dataKeys.length][xData.length];

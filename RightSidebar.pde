@@ -21,6 +21,7 @@ class RightSidebar {
         _indicators = new Layout(context, SIDEBAR_CONTENT_WIDTH, AUTO, 2);
         _indicators.setDistribution(SPACE_BETWEEN);
 
+        
         _deviationIndicator = new DeviationIndicator(context);
         _indicators.add(_deviationIndicator);
         
@@ -43,7 +44,7 @@ class RightSidebar {
             context,
             PLOT_WIDTH, PLOT_HEIGHT,
             "Скорость", "м/c",
-            new String[]{ "xVelocity", "yVelocity", "zVelocity" }
+            new String[]{ "speed" }
         );
         _layout.add(velocityGraph);
 
@@ -51,7 +52,7 @@ class RightSidebar {
         GraphWrapper accelerationGraph = new GraphWrapper(
             context,
             PLOT_WIDTH, PLOT_HEIGHT,
-            "Ускорение", "м/c^2",
+            "Ускорение", "G",
             new String[]{ "xAcceleration", "yAcceleration", "zAcceleration" }
         );
         _layout.add(accelerationGraph);

@@ -2,29 +2,38 @@ import processing.serial.*;
 
 final String TEST_SERIAL_PORT = "Тест";
 
-final byte startMarker = 0x7E;
-final int VAR_SIZE = 2;
-final int VAR_COUNT = 20;
-final int PRECISION = 10;
+final int VAR_SIZE = 4;
+final int VAR_COUNT = 19;
 final int BAUD_RATE = 115200;
-final int PACKAGE_SIZE = VAR_SIZE * VAR_COUNT;
+final int RF_REQUEST_SIZE = VAR_SIZE * VAR_COUNT;
+final byte RF_START_MARKER = 0x12;
+final byte RF_ESCAPE_MARKER = 0x7D;
 
-int currentByte = PACKAGE_SIZE;
-byte[] buffer = new byte[PACKAGE_SIZE];
+boolean isEscaped = false;
+int currentByte = RF_REQUEST_SIZE;
+byte[] buffer = new byte[RF_REQUEST_SIZE];
 
-void serialEvent(Serial serial) {
+void serialEvent(Serial serial) {    
     byte b = byte(serial.readChar());
-    //print(b);
 
-    if(currentByte != PACKAGE_SIZE){  
+    if (b == RF_ESCAPE_MARKER && !isEscaped) {
+        isEscaped = true; // Если считали маркер экранирования, значит следующий байт не служебный
+        return;
+    }
+
+    // Если есть место, читаем запрос
+    if (currentByte != RF_REQUEST_SIZE) {
         buffer[currentByte++] = b;
-        
-        if(currentByte == PACKAGE_SIZE){
+
+        // Прочитали весь запрос
+        if (currentByte == RF_REQUEST_SIZE) {
             serialPort.serialEvent();
         }
-    }else if(b == startMarker){
-        currentByte = 0;
+    } else if (b == RF_START_MARKER && !isEscaped) {
+        currentByte = 0; // Если считали маркер начала, начнем записывать байты в буффер
     }
+
+    isEscaped = false;
 }
 
 
@@ -50,41 +59,39 @@ class SerialPort {
     Table _data;
     private String[] _columnNames = {        
         "responseId",    //  1: Идентификатор запроса
-        "request",       //  2: Команда, на которую пришел ответ
-        "response",      //  3: Сам ответ
-        "stage",         //  4: Стадия полета
-        "height",        //  5: Высота
-        "xVelocity",     //  6: Скорость по Ox
-        "yVelocity",     //  7: Скорость по Oy
-        "zVelocity",     //  8: Скорость по Oz
-        "xAcceleration", //  9: Ускорение по Ox
-        "yAcceleration", // 10: Ускорение по Oy
-        "zAcceleration", // 11: Ускорение по Oz
-        "xCoordinate",   // 12: Координата GPS по Ox
-        "yCoordinate",   // 13: Координата GPS по Oy
-        "zCoordinate",   // 14: Координата GPS по Oz
-        "yaw",           // 15: Рыскание в градусах
-        "pitch",         // 16: Тангаж в градусах
-        "roll",          // 17: Крен в градусах
-        "yawSpeed",      // 18: Скорость рыскания в градусах в секунду
-        "pitchSpeed",    // 19: Скорость тангажа в градусах в секунду
-        "rollSpeed",     // 20: Скорость крена в градусах в секунду
-        "millis",        // 21: millis по внутреннему времени
-        "timestamp",     // 22: UNIX Timestamp в мс в виде строки
+        "response",      //  2: Сам ответ
+        "stage",         //  3: Стадия полета
+        "height",        //  4: Высота
+        "speed",         //  5: Скорость в м/с
+        "xAcceleration", //  6: Ускорение по Ox
+        "yAcceleration", //  7: Ускорение по Oy
+        "zAcceleration", //  8: Ускорение по Oz
+        "xCoordinate",   //  9: Координата GPS по Ox
+        "yCoordinate",   // 10: Координата GPS по Oy
+        "zCoordinate",   // 11: Координата GPS по Oz
+        "yaw",           // 12: Рыскание в градусах
+        "pitch",         // 13: Тангаж в градусах
+        "roll",          // 14: Крен в градусах
+        "yawSpeed",      // 15: Скорость рыскания в градусах в секунду
+        "pitchSpeed",    // 16: Скорость тангажа в градусах в секунду
+        "rollSpeed",     // 17: Скорость крена в градусах в секунду
+        "servoX",        // 18: Положение серво TVC по Ox
+        "servoY",        // 19: Положение серво TVC по Oy
+        "millis",        // 20: millis по внутреннему времени
+        "timestamp",     // 21: UNIX Timestamp в мс в виде строки
     };
     private String[] _columnTypes = {
-        "int",
-        "int",
-        "int",
-        "int",
-        "float",
-        "float", "float", "float", // Скорость
+        "int", "int",              // Ответ на запрос
+        "int",                     // Стадия полета
+        "float",                   // Высота
+        "float",                   // Скорость
         "float", "float", "float", // Ускорение
         "float", "float", "float", // GPS
         "float", "float", "float", // Углы Эйлера
         "float", "float", "float", // Угловые скорости
-        "int",
-        "String",
+        "int", "int",              // Положение серво
+        "int",                     // millis
+        "String",                  // Timestamp
     };
 
     
@@ -93,8 +100,16 @@ class SerialPort {
         _context = context;
         _serialPortName = serialPortName;
         
-        _data = new Table();       
+        // Инициализация таблицы
+        _data = new Table();
         
+        for (String name : _columnNames) {
+            _data.addColumn(name);
+        }
+        
+        getNewRow(); // Добавили дефолтную строчку
+        
+        // Инициализация записи телеметрии в файл
         _folder += "Session from " + getLocalTimeForFile() + "/";
         String path = _folder + getLocalTimeForFile() + " Autolog" + ".csv";
         _file = createWriter(path);
@@ -104,10 +119,7 @@ class SerialPort {
             _file.print(_columnNames[i] + (i + 1 < _columnNames.length ? "," : "\n"));
         }        
         
-        for (String name : _columnNames) {
-            _data.addColumn(name);
-        }
-        
+        // Устанавливаем соединение по Serial порту
         if (serialPortName != TEST_SERIAL_PORT) {
             _serial = new Serial(_context, serialPortName, BAUD_RATE);
         }        
@@ -118,7 +130,7 @@ class SerialPort {
     public void serialEvent() {
         TableRow newRow = getNewRow(); 
 
-        for(int i = 0, j = 0; j < PACKAGE_SIZE; i++, j += VAR_SIZE){
+        for(int i = 0, j = 0; j < RF_REQUEST_SIZE; i++, j += VAR_SIZE){
             if(_columnTypes[i] == "int"){
                 int val = bytesToInt(buffer, j);
                 newRow.setInt(_columnNames[i], val);
@@ -133,7 +145,6 @@ class SerialPort {
         }
 
         int responseId = newRow.getInt("responseId");
-        int request = newRow.getInt("request");
         int response = newRow.getInt("response");
 
         if(_lastResponseId == -1){
@@ -164,7 +175,7 @@ class SerialPort {
             return; 
         }
 
-        _serial.write(startMarker);
+        _serial.write(RF_START_MARKER);
         _serial.write(_requestId);
         _serial.write(_currentRequest);
     }
@@ -199,16 +210,12 @@ class SerialPort {
         newRow.setInt("millis", millis());
         newRow.setString("timestamp", String.valueOf(System.currentTimeMillis()));
         newRow.setInt("stage", -1);
-        return newRow; 
+        return newRow;
     }
 
 
 
     private void generateBuffer(){
-        if(_data.getRowCount() == 0){
-            getNewRow();
-        }
-
         TableRow lastRow = _data.getRow(_data.getRowCount() - 1);
         
         for (int i = 0; i < VAR_COUNT; i++) {
@@ -230,7 +237,7 @@ class SerialPort {
                 }
 
                 for(int j = 0; j < VAR_SIZE; j++) {
-                    buffer[2*i + j] = byte(int(val * PRECISION) >> (8 * j));
+                    buffer[2*i + j] = byte(Float.floatToIntBits(val) >> (8 * j));
                 }
             }
         }

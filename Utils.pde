@@ -11,7 +11,7 @@ PVector multByCoords(PVector a, PVector b) {
 }
 
 int bytesToInt(byte[] arr, int index){  
-    short val = 0;
+    int val = 0;
 
     for(int i = 0; i < VAR_SIZE; i++){
         val |= ((arr[index + i] & 0xFF) << (8 * i));
@@ -20,9 +20,8 @@ int bytesToInt(byte[] arr, int index){
     return int(val);
 }
 
-float bytesToFloat(byte[] arr, int index){  
-    int val = bytesToInt(arr, index);
-    return float(val) / PRECISION;
+float bytesToFloat(byte[] arr, int index){
+    return Float.intBitsToFloat(bytesToInt(arr, index));
 }
 
 String getLocalTime() {

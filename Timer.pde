@@ -24,10 +24,10 @@ class Timer extends Layout {
         add(_localTime);
     }
     
-    protected void update() {
+    public void draw() {
         _missionTime.setText(getMissionTime());
         _localTime.setText(getLocalTime());
-        super.update();
+        super.draw();
     }
     
     public String getMissionTime() {
